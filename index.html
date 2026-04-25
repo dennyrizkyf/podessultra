@@ -33,6 +33,7 @@ body {
   background: var(--ink);
   color: var(--text);
   height: 100vh;
+  height: 100dvh; /* Adaptasi dinamis untuk browser HP/Tablet */
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -133,6 +134,8 @@ body {
   flex-shrink: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--gold-light) transparent;
+  -webkit-overflow-scrolling: touch; /* Smooth scroll di layar sentuh */
+  padding-bottom: 20px; /* Ruang bernapas ekstra di bawah */
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-left: 0;
 }
@@ -305,6 +308,7 @@ select:focus { border-color: var(--gold); }
 .sidebar-footer {
   margin-top: auto;
   padding: 16px;
+  padding-bottom: 30px; /* Jarak aman di browser tablet/HP */
   font-size: 10px;
   font-weight: 700;
   color: var(--muted);
@@ -410,8 +414,10 @@ select:focus { border-color: var(--gold); }
   width: 250px;
   max-height: 50vh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   pointer-events: auto;
   color: #000000;
+  margin-bottom: 20px; /* Mencegah terpotong bilah bawah HP/Tablet */
 }
 #legend-bar { height: 12px; border-radius: 4px; margin-bottom: 4px; }
 #legend-title { font-size:12px; font-weight:800; margin-bottom:8px; text-transform:uppercase; color:#000000; }
@@ -434,11 +440,12 @@ select:focus { border-color: var(--gold); }
 #legend-box::-webkit-scrollbar-thumb { background: var(--gold-light); border-radius: 4px; }
 
 /* ════════════ MEDIA QUERIES (UNTUK RESPONSIVITAS HP/TABLET) ════════════ */
-@media (max-width: 768px) {
+/* Diubah ke max-width: 1024px untuk mencakup tablet potrait maupun lanskap */
+@media (max-width: 1024px) {
   /* 1. Header: Sesuaikan ukuran font dan potong teks agar muat */
   #header { padding: 0 12px; gap: 10px; }
   #header h1 { font-size: 16px; }
-  .subtitle { display: none; } /* Sembunyikan subtitle "Sulawesi Tenggara" di HP untuk hemat ruang */
+  .subtitle { display: none; } 
   #header-location { 
     max-width: 80px; 
     white-space: nowrap; 
@@ -462,7 +469,7 @@ select:focus { border-color: var(--gold); }
     left: 0;
     height: 100%;
     width: 100%;
-    max-width: 400px; /* Batas maksimal lebar sidebar di tablet */
+    max-width: 360px; /* Batas maksimal lebar sidebar di tablet */
     z-index: 2000;
     box-shadow: 2px 0 10px rgba(0,0,0,0.3);
     margin-left: 0 !important;
@@ -473,21 +480,22 @@ select:focus { border-color: var(--gold); }
     transform: translateX(-100%); /* Geser penuh ke kiri saat disembunyikan */
   }
 
-  /* 4. Panel Info Desa: Pindah ke tengah bawah layar HP */
+  /* 4. Panel Info Desa: Pindah ke posisi teratas tengah di Tablet/HP agar tidak menutupi legenda */
   #info-panel {
-    top: auto;
-    bottom: 20px;
+    top: 15px;
+    bottom: auto;
     right: 50%;
     transform: translateX(50%);
     width: 90%;
     max-width: 350px;
   }
 
-  /* 5. Kotak Legenda Leaflet: Buat lebih ringkas di HP */
+  /* 5. Kotak Legenda Leaflet: Buat lebih ringkas */
   #legend-box {
-    width: 200px;
+    width: 220px;
     padding: 12px 14px;
-    max-height: 40vh;
+    max-height: 40vh; /* Pastikan legenda tidak melewati batas atas layar */
+    margin-bottom: 25px; /* Angkat dari posisi paling bawah layar */
   }
 }
 </style>
@@ -497,7 +505,6 @@ select:focus { border-color: var(--gold); }
 <!-- UPLOAD SCREEN -->
 <div id="upload-screen">
   <h1 style="color:#ffffff; margin-bottom:30px; font-weight: 800; text-align: center;">PETA PODES SULTRA</h1>
-  <!-- Penambahan id 'upload-cards-container' untuk fleksibilitas CSS Media Query -->
   <div id="upload-cards-container" style="display:flex; gap:20px">
     <div class="upload-card" id="card-csv">
       <div style="font-weight: 700;">📋 Data CSV</div>
@@ -798,8 +805,8 @@ document.getElementById('btn-launch').onclick = () => {
   document.getElementById('upload-screen').style.display = 'none';
   document.getElementById('loading').style.display = 'flex';
   
-  // Jika diakses dari HP, otomatis sembunyikan sidebar setelah klik mulai
-  if(window.innerWidth <= 768) {
+  // Jika diakses dari HP/Tablet, otomatis sembunyikan sidebar setelah klik mulai
+  if(window.innerWidth <= 1024) {
       document.getElementById('sidebar').classList.add('hidden');
   }
   setTimeout(initApp, 500);
@@ -1136,8 +1143,8 @@ document.getElementById('color-grad-start').addEventListener('input', handleCust
 document.getElementById('btn-apply').onclick = () => { 
     document.getElementById('info-panel').style.display = 'none'; 
     applyViz(true); 
-    // Otomatis tutup sidebar di HP setelah klik Terapkan Perubahan
-    if(window.innerWidth <= 768) {
+    // Otomatis tutup sidebar di HP/Tablet setelah klik Terapkan Perubahan
+    if(window.innerWidth <= 1024) {
         document.getElementById('sidebar').classList.add('hidden');
     }
 };
@@ -1149,8 +1156,8 @@ document.getElementById('btn-reset').addEventListener('click', () => {
     document.getElementById('sel-basemap').value = 'dark'; map.removeLayer(currentBasemap); currentBasemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://carto.com/">CartoDB</a>' }).addTo(map);
     applyViz(true);
     
-    // Otomatis tutup sidebar di HP setelah klik Reset
-    if(window.innerWidth <= 768) {
+    // Otomatis tutup sidebar di HP/Tablet setelah klik Reset
+    if(window.innerWidth <= 1024) {
         document.getElementById('sidebar').classList.add('hidden');
     }
 });
