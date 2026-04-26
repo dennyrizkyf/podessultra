@@ -3,550 +3,417 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PODES 2025 — Sulawesi Tenggara</title>
+<title>Peta Potensi Desa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chroma-js@2.4.2/chroma.min.js"></script>
+<!-- Tambahan Pustaka: SheetJS (Excel), PapaParse (CSV Super Akurat), DomToImage (Ekspor Peta) -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
 <style>
-/* ─── TEMA WARNA HIJAU (#169c38) ─── */
+/* ─── TEMA WARNA & VARIABEL (EMERALD & SLATE PROFESSIONAL) ─── */
 :root {
-  --ink: #0d3817;       /* Hijau sangat gelap untuk latar belakang utama */
-  --cream: #f4fcf6;     /* Putih bernuansa hijau mint untuk sidebar */
-  --gold: #169c38;      /* Hijau utama */
-  --gold-light: #7cd996;/* Hijau muda untuk aksen border */
-  --rust: #c0392b;
-  --teal: #169c38;
-  --panel: #ffffff;
-  --border: #bcebc9;    /* Garis pembatas hijau lembut */
-  --text: #08240f;      /* Teks standar gelap */
-  --muted: #437352;     /* Teks abu-abu kehijauan */
-  --sidebar-w: 340px;
-  --header-h: 56px;
+  --primary: #047857;      /* Emerald 700 - Header, Tombol Utama (Aksen Kuat) */
+  --primary-hover: #065f46;/* Emerald 800 - Hover Tombol Utama */
+  --primary-light: #10b981;/* Emerald 500 - Highlight, Toggle Aktif, Border Fokus */
+  --primary-faint: #d1fae5;/* Emerald 100 - Latar Lembut (Badge, Hover item) */
+  
+  --bg-main: #f8fafc;      /* Slate 50 - Background Luar (Peta area kosong) */
+  --bg-sidebar: #ffffff;   /* Putih Bersih - Background Panel/Sidebar */
+  --bg-surface: #f1f5f9;   /* Slate 100 - Background Input & Tombol Sekunder */
+  
+  --text-main: #0f172a;    /* Slate 900 - Teks Utama (Sangat Gelap tapi tidak hitam pekat) */
+  --text-muted: #64748b;   /* Slate 500 - Teks Label / Petunjuk */
+  
+  --border: #e2e8f0;       /* Slate 200 - Garis pembatas halus */
+  
+  --danger: #ef4444;       /* Red 500 - Tombol Keluar / Reset */
+  --danger-hover: #fee2e2; /* Red 100 - Latar Hover Keluar */
+
+  --sidebar-w: 360px;
+  --header-h: 64px;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito Sans', sans-serif !important; }
 
 body {
-  background: var(--ink);
-  color: var(--text);
+  background: var(--bg-main);
+  color: var(--text-main);
   height: 100vh;
-  height: 100dvh; /* Adaptasi dinamis untuk browser HP/Tablet */
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-/* ─── HEADER ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
 #header {
   height: var(--header-h);
-  background: var(--ink);
+  background: var(--primary);
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 24px;
   gap: 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
   flex-shrink: 0;
   z-index: 1000;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 #btn-toggle-sidebar {
-  background: none;
-  border: none;
-  color: var(--gold);
-  font-size: 24px;
-  cursor: pointer;
-  padding: 0 8px;
-  margin-left: -8px;
-  transition: color 0.2s, transform 0.2s;
+  background: transparent; border: none;
+  color: rgba(255,255,255,0.8); font-size: 20px;
+  cursor: pointer; padding: 6px; border-radius: 8px;
+  transition: all 0.2s; display: flex; align-items: center; justify-content: center;
 }
-#btn-toggle-sidebar:hover { color: #ffffff; transform: scale(1.1); }
+#btn-toggle-sidebar:hover { color: #ffffff; background: rgba(255,255,255,0.15); }
 
-#header h1 {
-  color: #ffffff;
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-}
-#header .subtitle {
-  font-size: 11px;
-  color: #ffffff;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  opacity: 0.8;
-}
-#header .dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--gold);
-  opacity: 0.6;
-}
-.header-right {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+#header h1 { color: #ffffff; font-size: 18px; font-weight: 800; letter-spacing: 0.03em; }
+#header .subtitle { font-size: 12px; color: rgba(255,255,255,0.7); letter-spacing: 0.05em; font-weight: 600;}
+#header .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--primary-light); }
+
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
 #status-badge {
-  font-size: 11px;
-  color: #ffffff;
-  background: rgba(22, 156, 56, 0.8);
-  padding: 4px 10px;
-  border-radius: 20px;
-  border: 1px solid var(--gold-light);
-  white-space: nowrap;
+  font-size: 11px; font-weight: 800; color: var(--primary);
+  background: var(--primary-faint);
+  padding: 6px 12px; border-radius: 20px;
+  white-space: nowrap; box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.2);
 }
 
 #btn-exit {
-  background: transparent;
-  border: 1px solid var(--rust);
-  color: var(--rust);
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 800;
-  cursor: pointer;
-  text-transform: uppercase;
+  background: transparent; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.9);
+  padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; 
+  cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;
   transition: all 0.2s;
 }
-#btn-exit:hover {
-  background: var(--rust);
-  color: #ffffff;
-}
+#btn-exit:hover { background: var(--danger); border-color: var(--danger); color: white; }
 
-/* ─── MAIN LAYOUT ─── */
-#main {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-}
+#main { display: flex; flex: 1; overflow: hidden; position: relative; }
 
-/* ─── SIDEBAR ─── */
 #sidebar {
-  width: var(--sidebar-w);
-  background: var(--cream);
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
-  border-right: 1px solid var(--border);
-  flex-shrink: 0;
-  scrollbar-width: thin;
-  scrollbar-color: var(--gold-light) transparent;
-  -webkit-overflow-scrolling: touch; /* Smooth scroll di layar sentuh */
-  padding-bottom: 20px; /* Ruang bernapas ekstra di bawah */
+  width: var(--sidebar-w); background: var(--bg-sidebar);
+  display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden;
+  border-right: 1px solid var(--border); flex-shrink: 0;
+  -webkit-overflow-scrolling: touch;
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-left: 0;
+  margin-left: 0; z-index: 1000; box-shadow: var(--shadow-sm);
 }
-#sidebar.hidden {
-  margin-left: calc(-1 * var(--sidebar-w));
-}
+#sidebar.hidden { margin-left: calc(-1 * var(--sidebar-w)); }
 
-.section {
-  padding: 16px 18px;
-  border-bottom: 1px solid var(--border);
-}
+.section { padding: 24px; border-bottom: 1px solid var(--border); }
 .section-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-main); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
 }
-.section-title::before {
-  content: '';
-  display: inline-block;
-  width: 14px; height: 3px;
-  background: var(--gold);
-  border-radius: 2px;
-}
+.section-title::before { content: ''; display: block; width: 4px; height: 14px; background: var(--primary-light); border-radius: 2px; }
 
-label {
-  font-size: 12px;
-  color: var(--text);
-  display: block;
-  margin-bottom: 4px;
-  font-weight: 700;
-}
+label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px; font-weight: 700; }
 
-select, input[type=range] {
-  width: 100%;
-  font-size: 13px;
-  color: var(--text);
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 7px 10px;
-  margin-bottom: 10px;
-  outline: none;
-  transition: border-color 0.2s;
-  cursor: pointer;
-  font-weight: 500;
+select, input[type=range], input[type=text] {
+  width: 100%; font-size: 13px; color: var(--text-main); background: #ffffff;
+  border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px;
+  margin-bottom: 16px; outline: none; transition: all 0.2s ease; font-weight: 600;
+  box-shadow: var(--shadow-sm);
 }
-select:focus { border-color: var(--gold); }
+select { 
+  cursor: pointer; appearance: none; 
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); 
+  background-repeat: no-repeat; background-position: right 14px center; background-size: 14px; padding-right: 36px; 
+}
+select:hover, input[type=text]:hover { border-color: #94a3b8; }
+select:focus, input[type=text]:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+
+input[type=range] { padding: 0; background: transparent; height: 24px; box-shadow: none; border: none; cursor: pointer; margin-bottom: 16px;}
 
 .var-block {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 10px;
-  position: relative;
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; margin-bottom: 16px; position: relative;
 }
 .var-block .var-num {
-  position: absolute;
-  top: -8px; left: 10px;
-  font-size: 9px;
-  font-weight: 800;
-  background: var(--gold);
-  color: #ffffff; 
-  padding: 2px 6px;
-  border-radius: 4px;
-  letter-spacing: 0.08em;
+  display: inline-block; font-size: 10px; font-weight: 800;
+  background: #ffffff; color: var(--primary); border: 1px solid rgba(16, 185, 129, 0.2);
+  padding: 4px 10px; border-radius: 6px; letter-spacing: 0.05em; margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
 }
+#var2-block .var-num { color: var(--text-muted); border-color: var(--border); }
 
-/* ─── METODE VIZ ─── */
-.method-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  margin-bottom: 10px;
-}
+.method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
 .method-btn {
-  padding: 8px 6px;
-  border: 1.5px solid var(--border);
-  border-radius: 6px;
-  background: white;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
-  text-align: center;
-  transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  padding: 12px 8px; border: 1px solid var(--border); border-radius: 8px;
+  background: #ffffff; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--text-muted);
+  text-align: center; transition: all 0.2s; box-shadow: var(--shadow-sm);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
 }
-.method-btn:hover { border-color: var(--gold); color: var(--text); }
-.method-btn.active {
-  border-color: var(--gold);
-  background: var(--gold);
-  color: #ffffff; 
+.method-btn:hover { border-color: #cbd5e1; background: var(--bg-surface); color: var(--text-main); }
+.method-btn.active { 
+  border-color: var(--primary); background: var(--primary-faint); color: var(--primary); 
+  box-shadow: inset 0 0 0 1px var(--primary);
 }
-.method-icon { font-size: 16px; }
+.method-icon { font-size: 18px; opacity: 0.9; }
+.method-btn.active .method-icon { opacity: 1; }
 
-/* ─── COLOR PALETTE ─── */
-.palette-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  margin-bottom: 10px;
-}
+.palette-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
 .pal-btn {
-  height: 28px;
-  border-radius: 5px;
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: transform 0.1s, border-color 0.2s;
-  position: relative;
-  overflow: hidden;
+  height: 32px; border-radius: 6px; border: 2px solid transparent; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s; position: relative; box-shadow: var(--shadow-sm);
 }
-.pal-btn span {
-  position: absolute;
-  bottom: 2px; left: 0; right: 0;
-  text-align: center;
-  font-size: 9px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.9);
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-}
+.pal-btn:hover { transform: scale(1.05); box-shadow: var(--shadow-md); }
+.pal-btn.selected { outline: 2px solid var(--primary); outline-offset: 2px; }
+.pal-btn span { display: none; }
 
-.custom-grad-row { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
-.custom-grad-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.custom-grad-label { font-size: 9px; font-weight: 700; color: var(--muted); letter-spacing: 0.05em;}
+.custom-grad-row { display: flex; align-items: center; gap: 16px; margin-top: 12px; background: var(--bg-surface); padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border);}
+.custom-grad-col { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%;}
+.custom-grad-label { font-size: 10px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase;}
 
 .btn-apply {
-  width: 100%;
-  padding: 10px;
-  background: var(--gold);
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  letter-spacing: 0.04em;
-  transition: opacity 0.2s, transform 0.1s;
+  width: 100%; padding: 14px; background: var(--primary); color: #ffffff;
+  border: none; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer;
+  transition: all 0.2s; box-shadow: 0 4px 6px rgba(4, 120, 87, 0.2);
 }
-.btn-apply:hover { opacity: 0.9; }
+.btn-apply:hover { background: var(--primary-hover); box-shadow: 0 6px 12px rgba(4, 120, 87, 0.3); transform: translateY(-1px); }
 .btn-apply:active { transform: scale(0.98); }
 
+.action-row { display: flex; gap: 10px; margin-top: 12px; }
+.btn-action {
+  flex: 1; padding: 12px; background: #ffffff; color: var(--text-main);
+  border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: var(--shadow-sm);
+}
+.btn-action:hover { background: var(--bg-surface); border-color: #cbd5e1; }
+
 .btn-reset {
-  width: 100%;
-  padding: 8px;
-  background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
+  width: 100%; padding: 12px; background: transparent; color: var(--danger);
+  border: 1px dashed #fca5a5; border-radius: 8px; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; margin-top: 12px;
 }
-.btn-reset:hover {
-  background: var(--border);
-  color: var(--text);
-}
+.btn-reset:hover { background: var(--danger-hover); border-color: var(--danger); }
 
-/* ─── FOOTER SIDEBAR ─── */
 .sidebar-footer {
-  margin-top: auto;
-  padding: 16px;
-  padding-bottom: 30px; /* Jarak aman di browser tablet/HP */
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--muted);
-  text-align: center;
-  border-top: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.4);
-  letter-spacing: 0.02em;
+  margin-top: auto; padding: 24px; font-size: 11px; font-weight: 600;
+  color: var(--text-muted); text-align: center; border-top: 1px solid var(--border);
+  background: var(--bg-main); line-height: 1.5;
 }
 
-/* ─── MAP WRAPPER ─── */
-#map-container { 
-  flex: 1; 
-  position: relative; 
-  display: flex; 
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-}
-#map { 
-  flex: 1; 
-  background: #0d1117; 
-  width: 100%; 
-  height: 100%; 
-  z-index: 1;
-}
+#map-container { flex: 1; position: relative; display: flex; flex-direction: column; width: 100%; height: 100%; }
+#map { flex: 1; background: #111827; width: 100%; height: 100%; z-index: 1; }
 
-/* ─── TOOLTIP & INFO PANEL ─── */
-.podes-tooltip {
-  background: var(--ink) !important;
-  border: 1px solid var(--gold) !important;
-  border-radius: 8px !important;
-  color: #ffffff !important;
-  font-size: 12px !important;
-  padding: 10px 14px !important;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
-}
-
-#info-panel {
-  position: absolute;
-  top: 15px;
-  right: 15px;
+.glass-panel {
   background: rgba(255, 255, 255, 0.95);
-  border: 1px solid var(--gold-light);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  backdrop-filter: blur(8px);
-  width: 280px;
-  padding: 18px 20px;
-  z-index: 1000;
-  display: none;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   pointer-events: auto;
 }
-#info-panel-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(192, 57, 43, 0.1);
-  border: none;
-  color: var(--rust);
-  font-size: 12px;
-  font-weight: 800;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-#info-panel-close:hover {
-  background: var(--rust);
-  color: #fff;
+
+.podes-tooltip {
+  background: #ffffff !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important; color: var(--text-main) !important;
+  font-size: 13px !important; padding: 12px 16px !important;
+  box-shadow: var(--shadow-md) !important; 
 }
 
-/* ─── LOADING & UPLOAD ─── */
-#loading {
-  position: fixed; inset: 0; background: var(--ink);
+#info-panel { 
+  position: absolute; top: 20px; right: 20px; 
+  width: auto; min-width: 200px; max-width: 320px; 
+  padding: 12px 16px; z-index: 1000; display: block; 
+  background: rgba(255, 255, 255, 0.65); /* Transparan saat kosong */
+  transition: all 0.3s ease;
+}
+#info-panel.has-data {
+  width: 320px; padding: 24px;
+  background: rgba(255, 255, 255, 0.95); /* Solid saat ada data */
+}
+
+#info-panel-close {
+  position: absolute; top: 16px; right: 16px; background: var(--bg-surface); border: none; color: var(--text-muted);
+  font-size: 14px; font-weight: 800; width: 28px; height: 28px; border-radius: 6px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+#info-panel-close:hover { background: var(--border); color: var(--text-main); }
+
+#legend-box { 
+  padding: 20px 24px; width: 280px; max-height: 50vh; overflow-y: auto; margin-bottom: 30px; margin-left: 20px;
+}
+#legend-bar { height: 12px; border-radius: 6px; margin-bottom: 10px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); }
+#legend-title { font-size:13px; font-weight:800; margin-bottom:14px; color:var(--text-main); line-height: 1.4;}
+.legend-labels { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color:var(--text-muted); }
+
+#loading, #upload-screen {
+  position: fixed; inset: 0; 
+  background: linear-gradient(135deg, #065f46 0%, #022c22 100%);
   display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999;
 }
+#upload-screen { z-index: 9998; justify-content: flex-start; overflow-y: auto; }
 
-#upload-screen {
-  position: fixed; inset: 0; background: var(--ink);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9998;
-}
 .upload-card {
-  background: #0a2b11; border: 1.5px solid var(--gold); border-radius: 14px;
-  padding: 24px; width: 280px; text-align: center; color: white;
+  background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px; padding: 32px 24px; width: 320px; text-align: center; color: white;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
 }
-.drop-zone { border: 1.5px dashed var(--gold); padding: 20px; cursor: pointer; margin: 10px 0; border-radius: 8px; }
-.drop-zone:hover { background: rgba(22, 156, 56, 0.15); }
-.card-status { font-size: 11px; padding: 4px; border-radius: 10px; font-weight: 600; }
-.card-status.ok { background: rgba(22, 156, 56, 0.2); color: #7cd996; }
-
-/* ─── LEGENDA (LEGEND BOX) ─── */
-#legend-box { 
-  padding: 16px 20px; 
-  background: rgba(255, 255, 255, 0.95); 
-  border: 1px solid var(--gold-light); 
-  border-radius: 10px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-  backdrop-filter: blur(8px);
-  width: 250px;
-  max-height: 50vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  pointer-events: auto;
-  color: #000000;
-  margin-bottom: 20px; /* Mencegah terpotong bilah bawah HP/Tablet */
+.upload-card:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-8px); border-color: rgba(255,255,255,0.25); }
+.drop-zone { 
+  border: 2px dashed rgba(255, 255, 255, 0.3); padding: 24px 16px; cursor: pointer; 
+  margin: 20px 0; border-radius: 10px; font-weight: 700; font-size: 14px; color: #ffffff;
+  background: rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
 }
-#legend-bar { height: 12px; border-radius: 4px; margin-bottom: 4px; }
-#legend-title { font-size:12px; font-weight:800; margin-bottom:8px; text-transform:uppercase; color:#000000; }
-.legend-labels { display: flex; justify-content: space-between; font-size: 10px; font-weight: 600; color:#000000; }
+.drop-zone:hover { background: rgba(255, 255, 255, 0.15); border-color: var(--primary-light); color: var(--primary-light);}
 
-#legend-cat-help { display: none; font-size: 9px; color: #000000; font-weight: 700; margin-bottom: 8px; line-height: 1.2; }
-#legend-cat { display: none; flex-direction: column; gap: 6px; }
-.cat-item { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; color: #000000; }
-.cat-color-picker { width: 28px; height: 28px; padding: 0; border: none; border-radius: 4px; cursor: pointer; background: none; }
-.cat-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
-.cat-color-picker::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
+.card-status { font-size: 12px; padding: 10px; border-radius: 8px; font-weight: 800; color: rgba(255,255,255,0.6); background: rgba(0,0,0,0.3); }
+.card-status.ok { background: var(--primary-light); color: #022c22; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
 
-#legend-bivariate { display: none; }
-.biv-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); width: 90px; height: 90px; margin: 8px auto; }
-.biv-cell { width: 100%; height: 100%; }
-.biv-labels { display: flex; justify-content: space-between; font-size: 10px; font-weight: 600; color: #000000; margin-top: 4px; }
+#btn-launch {
+  margin-top:40px; padding:16px 48px; 
+  background: rgba(255, 255, 255, 0.1); color: rgba(255,255,255,0.5); border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius:30px; cursor:not-allowed; font-weight:800;
+  font-size: 15px; text-transform: uppercase; letter-spacing: 0.1em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#btn-launch:not([disabled]) { 
+  background: #ffffff; color: var(--primary); border-color: #ffffff; cursor: pointer;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
+#btn-launch:not([disabled]):hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
 
-#legend-box::-webkit-scrollbar { width: 6px; }
-#legend-box::-webkit-scrollbar-track { background: transparent; }
-#legend-box::-webkit-scrollbar-thumb { background: var(--gold-light); border-radius: 4px; }
+#table-modal {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px);
+  z-index: 3000; display: none; align-items: center; justify-content: center; padding: 24px;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* ════════════ MEDIA QUERIES (UNTUK RESPONSIVITAS HP/TABLET) ════════════ */
-/* Diubah ke max-width: 1024px untuk mencakup tablet potrait maupun lanskap */
+#table-container {
+  background: #ffffff; width: 100%; max-width: 1200px; height: 85vh;
+  border-radius: 16px; display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+#table-header { 
+  padding: 20px 28px; background: #ffffff; border-bottom: 1px solid var(--border); color: var(--text-main); display: flex; justify-content: space-between; 
+  align-items: center; font-weight: 800; font-size: 16px;
+}
+#table-body { flex: 1; overflow: auto; padding: 0; background: #ffffff; }
+table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+th { 
+  background: var(--bg-surface); color: var(--text-muted); position: sticky; top: 0; padding: 14px 20px; 
+  text-align: left; border-bottom: 2px solid var(--border); font-size: 11px; 
+  text-transform: uppercase; z-index: 10; font-weight: 800; letter-spacing: 0.05em;
+}
+td { padding: 14px 20px; border-bottom: 1px solid var(--border); color: var(--text-main); font-weight: 500; }
+tr:hover td { background: var(--bg-main); }
+
+th.sortable { cursor: pointer; user-select: none; transition: background 0.2s; }
+th.sortable:hover { background: #e2e8f0; color: var(--text-main); }
+.sort-icon { margin-left: 6px; font-size: 10px; color: var(--primary); }
+
 @media (max-width: 1024px) {
-  /* 1. Header: Sesuaikan ukuran font dan potong teks agar muat */
-  #header { padding: 0 12px; gap: 10px; }
+  #header { padding: 0 16px; gap: 12px; }
   #header h1 { font-size: 16px; }
   .subtitle { display: none; } 
-  #header-location { 
-    max-width: 80px; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-  }
+  #header-location { max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  /* 2. Upload Screen: Susun kartu secara vertikal */
-  #upload-cards-container {
-    flex-direction: column !important;
-    gap: 12px !important;
-    width: 100%;
-    align-items: center;
-  }
-  .upload-card { width: 85% !important; max-width: 320px; padding: 16px; }
-
-  /* 3. Sidebar: Mengambang di atas peta (Overlay) */
+  #upload-cards-container { flex-direction: column !important; gap: 20px !important; width: 100%; align-items: center; }
+  .upload-card { width: 90% !important; max-width: 400px; padding: 24px; }
+  
   #sidebar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    max-width: 360px; /* Batas maksimal lebar sidebar di tablet */
-    z-index: 2000;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.3);
-    margin-left: 0 !important;
-    transform: translateX(0); /* Sidebar muncul */
+    position: absolute; top: 0; left: 0; height: 100%; width: 100%; max-width: 340px;
+    z-index: 2000; box-shadow: var(--shadow-lg); margin-left: 0 !important; transform: translateX(0);
   }
-  #sidebar.hidden {
-    margin-left: 0 !important;
-    transform: translateX(-100%); /* Geser penuh ke kiri saat disembunyikan */
-  }
+  #sidebar.hidden { margin-left: 0 !important; transform: translateX(-100%); box-shadow: none;}
 
-  /* 4. Panel Info Desa: Pindah ke posisi teratas tengah di Tablet/HP agar tidak menutupi legenda */
-  #info-panel {
-    top: 15px;
-    bottom: auto;
-    right: 50%;
-    transform: translateX(50%);
-    width: 90%;
-    max-width: 350px;
-  }
-
-  /* 5. Kotak Legenda Leaflet: Buat lebih ringkas */
-  #legend-box {
-    width: 220px;
-    padding: 12px 14px;
-    max-height: 40vh; /* Pastikan legenda tidak melewati batas atas layar */
-    margin-bottom: 25px; /* Angkat dari posisi paling bawah layar */
-  }
+  #info-panel { top: 15px; bottom: auto; right: 15px; transform: none; width: auto; max-width: 90%; padding: 12px 16px;}
+  #info-panel.has-data { width: 280px; padding: 20px;}
+  #legend-box { width: 240px; padding: 16px 20px; max-height: 35vh; margin-bottom: 25px; margin-left: 15px;}
 }
+
+/* Modifikasi elemen Legend */
+#legend-cat-help { display: none; font-size: 10.5px; color: var(--text-muted); font-weight: 700; margin-bottom: 12px; line-height: 1.3; }
+#legend-cat { display: none; flex-direction: column; gap: 10px; }
+.cat-item { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; color: var(--text-main); }
+.cat-color-picker { width: 28px; height: 28px; padding: 0; border: none; border-radius: 6px; cursor: pointer; background: none;}
+.cat-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+.cat-color-picker::-webkit-color-swatch { border: 1px solid rgba(0,0,0,0.15); border-radius: 6px; }
+
+#legend-bivariate { display: none; }
+.biv-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); width: 100px; height: 100px; margin: 14px auto; border-radius: 6px; overflow: hidden; box-shadow: var(--shadow-sm);}
+.biv-cell { width: 100%; height: 100%; }
+.biv-labels { display: flex; justify-content: space-between; font-size: 10px; font-weight: 700; color: var(--text-muted); margin-top: 8px; }
 </style>
 </head>
 <body>
 
 <!-- UPLOAD SCREEN -->
 <div id="upload-screen">
-  <h1 style="color:#ffffff; margin-bottom:30px; font-weight: 800; text-align: center;">PETA PODES SULTRA</h1>
-  <div id="upload-cards-container" style="display:flex; gap:20px">
-    <div class="upload-card" id="card-csv">
-      <div style="font-weight: 700;">📋 Data CSV</div>
-      <div style="font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 6px; margin-bottom: 6px; line-height: 1.3; font-style: italic;">* pastikan data yang dimasukkan memuat ID Desa serta Nama Wilayah</div>
-      <div class="drop-zone" onclick="document.getElementById('input-csv').click()">
-        <input type="file" id="input-csv" accept=".csv" hidden>
-        Tarik file CSV di sini
-      </div>
-      <div id="status-csv" class="card-status">Menunggu file...</div>
-    </div>
-    <div class="upload-card" id="card-geo">
-      <div style="font-weight: 700;">🗺️ GeoJSON Peta</div>
-      <div style="font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 6px; margin-bottom: 6px; line-height: 1.3; font-style: italic;">* pastikan data yang dimasukkan memuat ID Desa serta Nama Wilayah</div>
-      <div class="drop-zone" onclick="document.getElementById('input-geo').click()">
-        <input type="file" id="input-geo" accept=".json,.geojson" hidden>
-        Tarik file GeoJSON di sini
-      </div>
-      <div id="status-geo" class="card-status">Menunggu file...</div>
-    </div>
-  </div>
-  <button id="btn-launch" style="margin-top:20px; padding:10px 40px; background:#ffcc00; border:none; border-radius:8px; cursor:pointer; opacity:0.3; font-weight:800; color:#0d3817;" disabled>Buka Peta</button>
+  <div style="flex: 1; min-height: 20px;"></div>
   
-  <!-- FOOTER HALAMAN DEPAN -->
-  <div style="position: absolute; bottom: 20px; color: rgba(255,255,255,0.6); font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-align: center; width: 100%;">
-    Tim Podes BPS Provinsi Sulawesi Tenggara
+  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 0; width: 100%;">
+    <div style="width: 64px; height: 64px; background: rgba(255,255,255,0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.2);">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+    </div>
+    <h1 style="color:#ffffff; margin-bottom:40px; font-weight: 900; text-align: center; font-size: 24px; letter-spacing: 0.1em; text-shadow: 0 4px 15px rgba(0,0,0,0.4);">PETA POTENSI DESA</h1>
+    
+    <div id="upload-cards-container" style="display:flex; gap:24px">
+      <div class="upload-card" id="card-csv">
+        <div style="font-weight: 800; font-size: 15px; letter-spacing: 0.05em; margin-bottom: 10px;">DATA TABEL (CSV/EXCEL)</div>
+        <div style="font-size: 12.5px; color: rgba(255,255,255,0.85); line-height: 1.5; font-weight: 600;">Pastikan memiliki kolom ID Desa</div>
+        <div class="drop-zone" onclick="document.getElementById('input-csv').click()">
+          <input type="file" id="input-csv" accept=".csv, .xlsx, .xls" hidden>
+          + Pilih File Tabel
+        </div>
+        <div id="status-csv" class="card-status">Menunggu file...</div>
+      </div>
+      <div class="upload-card" id="card-geo">
+        <div style="font-weight: 800; font-size: 15px; letter-spacing: 0.05em; margin-bottom: 10px;">DATA PETA (GEOJSON)</div>
+        <div style="font-size: 12.5px; color: rgba(255,255,255,0.85); line-height: 1.5; font-weight: 600;">Properti ID Desa harus sinkron dengan ID Desa pada Tabel</div>
+        <div class="drop-zone" onclick="document.getElementById('input-geo').click()">
+          <input type="file" id="input-geo" accept=".json,.geojson" hidden>
+          + Pilih File Peta
+        </div>
+        <div id="status-geo" class="card-status">Menunggu file...</div>
+      </div>
+    </div>
+    <button id="btn-launch" disabled>Buka Ruang Kerja</button>
+  </div>
+  
+  <div style="flex: 1; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 40px; min-height: 60px; width: 100%;">
+    <div style="color: rgba(255,255,255,0.5); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-align: center;">
+      &copy; 2025 Tim Podes BPS Provinsi Sulawesi Tenggara
+    </div>
   </div>
 </div>
 
 <!-- LOADING -->
 <div id="loading" style="display:none">
-  <div style="width:40px; height:40px; border:4px solid var(--gold); border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite"></div>
-  <h2 style="color:#ffffff; margin-top:20px; font-weight:700;">Memproses Data...</h2>
+  <div style="width:48px; height:48px; border:4px solid rgba(255,255,255,0.1); border-top-color:#ffffff; border-radius:50%; animation:spin 1s linear infinite"></div>
+  <h2 style="color:#ffffff; margin-top:24px; font-size: 14px; font-weight:800; letter-spacing: 0.05em;" id="loading-text">Memproses Data...</h2>
 </div>
 <style> @keyframes spin { to { transform: rotate(360deg); } } </style>
 
 <div id="header">
-  <button id="btn-toggle-sidebar" title="Sembunyikan/Tampilkan Panel">☰</button>
+  <button id="btn-toggle-sidebar" title="Sembunyikan/Tampilkan Panel">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+  </button>
   <div class="dot"></div>
-  <h1>PODES 2025</h1>
+  <h1>Peta Potensi Desa</h1>
   <div class="subtitle">Sulawesi Tenggara</div>
   <div class="header-right">
-    <div id="header-location" style="font-size: 11px; font-weight: 800; color: #ffffff; margin-right: 8px; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.9;">SULAWESI TENGGARA</div>
+    <div id="header-location" style="font-size: 12px; font-weight: 800; color: #ffffff; margin-right: 10px; letter-spacing: 0.05em; opacity: 0.9;">SULAWESI TENGGARA</div>
     <div id="status-badge">0 Desa</div>
     <button id="btn-exit" title="Kembali ke Halaman Awal">Keluar</button>
   </div>
@@ -556,7 +423,8 @@ select:focus { border-color: var(--gold); }
   <!-- SIDEBAR KIRI -->
   <div id="sidebar">
     <div class="section">
-      <div class="section-title">Filter Wilayah</div>
+      <div class="section-title">Pencarian & Filter</div>
+      <input type="text" id="input-search" placeholder="Cari Nama Desa / Kecamatan..." autocomplete="off">
       <label>Kabupaten/Kota</label>
       <select id="sel-kab"><option value="ALL">Semua Kabupaten</option></select>
       <label>Kecamatan</label>
@@ -566,144 +434,205 @@ select:focus { border-color: var(--gold); }
     </div>
 
     <div class="section">
-      <div class="section-title">Variabel Data</div>
-      
-      <label>Jumlah Variabel yang Divisualisasikan</label>
-      <select id="sel-var-count" style="margin-bottom: 15px; border-color: var(--gold);">
+      <div class="section-title">Variabel</div>
+      <label>Mode Tampilan</label>
+      <select id="sel-var-count">
         <option value="1" selected>1 Variabel Utama</option>
-        <option value="2">2 Variabel (Komparasi)</option>
+        <option value="2">2 Variabel (Kombinasi)</option>
       </select>
 
       <div class="var-block" id="var1-block">
-        <div class="var-num">VAR 1</div>
+        <span class="var-num">VARIABEL 1</span>
         <select id="sel-var1"></select>
+        
         <div id="type-container">
-          <label style="margin-top: 8px;">Tipe Variabel 1 (Penentu Warna)</label>
-          <select id="sel-var-type">
-            <option value="continuous">Kontinu (Angka/Gradasi)</option>
-            <option value="categorical">Kategorik (Grup/Unik)</option>
+          <label>Tipe Data Visualisasi</label>
+          <select id="sel-var-type" style="margin-bottom: 0;">
+            <option value="continuous">Kontinu (Gradasi Warna)</option>
+            <option value="categorical">Kategorik (Grup Kategori)</option>
           </select>
         </div>
+
+        <!-- PANEL KHUSUS: PENGELOMPOKAN ANGKA DALAM MODE KATEGORIK -->
+        <div id="numeric-cat-settings" style="display:none; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border);">
+          <label>Metode Pengelompokan Angka</label>
+          <select id="sel-cat-method" style="margin-bottom: 12px;">
+            <option value="k" selected>Jenks (Natural Breaks)</option>
+            <option value="q">Kuantil (Sama Banyak)</option>
+            <option value="e">Interval Sama</option>
+          </select>
+          <label style="display:flex; justify-content:space-between; align-items:center;">
+            Jumlah Kelompok <span id="val-cat-classes" style="color: var(--primary); font-weight: 800; font-size:13px;">5</span>
+          </label>
+          <input type="range" id="slider-cat-classes" min="2" max="9" value="5" style="margin-bottom: 0;">
+        </div>
+
       </div>
 
-      <div class="var-block" id="var2-block" style="display:none; background: #e9f7ed; border-color: var(--gold-light);">
-        <div class="var-num" style="background: var(--ink); color: #ffffff;">VAR 2</div>
-        <select id="sel-var2"></select>
-        <label style="margin-top: 8px; font-size: 10px; color: var(--text);">↳ Variabel penentu gabungan/besaran simbol</label>
+      <div class="var-block" id="var2-block" style="display:none;">
+        <span class="var-num">VARIABEL 2</span>
+        <select id="sel-var2" style="margin-bottom: 6px;"></select>
+        <label style="font-size: 10.5px; color: var(--text-muted); font-weight: 600;">↳ Menentukan ukuran simbol atau sumbu X Bivariat</label>
       </div>
-
     </div>
 
     <div class="section">
       <div class="section-title">Metode Visualisasi</div>
       <div class="method-grid">
         <button class="method-btn active" data-method="choropleth"><span class="method-icon">🎨</span>Warna Area</button>
-        <button class="method-btn" data-method="proportional"><span class="method-icon">🔘</span>Simbol Saja</button>
-        <button class="method-btn" data-method="jenks"><span class="method-icon">◫</span>Jenks/Kuantil</button>
-        <button class="method-btn" data-method="bivariate" style="display:none;"><span class="method-icon">🧬</span>Gabungan Warna</button>
-        <button class="method-btn" data-method="color-symbol" style="display:none;"><span class="method-icon">🎯</span>Warna + Simbol</button>
+        <button class="method-btn" data-method="proportional"><span class="method-icon">🔘</span>Simbol</button>
+        <button class="method-btn" data-method="jenks"><span class="method-icon">◫</span>Kuantil</button>
+        <button class="method-btn" data-method="bivariate" style="display:none;"><span class="method-icon">🧬</span>Bivariat</button>
+        <button class="method-btn" data-method="color-symbol" style="display:none;"><span class="method-icon">🎯</span>Area + Simbol</button>
       </div>
-      
       <div id="classes-container">
-        <label id="lbl-classes">Jumlah Kelas Gradasi: <span id="val-classes" style="color: var(--gold); font-weight: 800;">5</span></label>
+        <label style="display:flex; justify-content:space-between; align-items:center;">
+          Jumlah Kelas Warna <span id="val-classes" style="color: var(--primary); font-weight: 800; font-size:13px;">5</span>
+        </label>
         <input type="range" id="slider-classes" min="3" max="9" value="5">
       </div>
     </div>
 
     <div class="section" id="palette-section">
-      <div class="section-title">Skema Warna</div>
+      <div class="section-title">Pengaturan Warna</div>
       
+      <!-- PALET UNTUK MODE KONTINU (GRADASI) -->
       <div id="choropleth-color-box">
+          <label>Pilih Palet Dasar:</label>
           <div class="palette-grid" id="palette-grid"></div>
           
-          <!-- Gradasi Kustom -->
-          <div id="custom-gradient-box" style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border);">
-            <label style="font-size: 11px; color: var(--text); margin-bottom:4px;">Atau Buat Gradasi Kustom:</label>
-            <div class="custom-grad-row">
-              <div class="custom-grad-col">
-                <span class="custom-grad-label">TERENDAH</span>
-                <input type="color" id="color-grad-start" class="cat-color-picker" value="#f4fcf6" title="Warna Nilai Rendah">
-              </div>
-              <span style="font-size: 14px; color: var(--muted); padding-top: 10px;">➔</span>
-              <div class="custom-grad-col">
-                <span class="custom-grad-label">TERTINGGI</span>
-                <input type="color" id="color-grad-end" class="cat-color-picker" value="#169c38" title="Warna Nilai Tinggi">
-              </div>
+          <label style="margin-top: 16px;">Kustomisasi Ekstrim:</label>
+          <div id="custom-gradient-box" class="custom-grad-row">
+            <div class="custom-grad-col">
+              <span class="custom-grad-label">Rendah</span>
+              <input type="color" id="color-grad-start" class="cat-color-picker" style="width:100%; height:28px;" value="#d1fae5">
+            </div>
+            <div class="custom-grad-col">
+              <span class="custom-grad-label">Tinggi</span>
+              <input type="color" id="color-grad-end" class="cat-color-picker" style="width:100%; height:28px;" value="#047857">
             </div>
           </div>
       </div>
       
-      <!-- Warna Simbol Kustom -->
-      <div id="symbol-color-box" style="display:none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border);">
-        <label style="font-size: 11px; color: var(--text); margin-bottom:6px; display:block;">Pilih Warna Simbol:</label>
-        <input type="color" id="color-symbol-picker" class="cat-color-picker" value="#ffcc00" title="Warna Simbol" style="width: 100%; height: 32px;">
+      <!-- PANEL WARNA BARU UNTUK MODE KATEGORIK -->
+      <div id="categorical-color-box" style="display:none; margin-top: 16px; border-top: 1px solid var(--border); padding-top: 16px;">
+          <label style="margin-bottom: 12px;">Tentukan Warna Tiap Kategori:</label>
+          <div id="cat-color-list" style="max-height: 280px; overflow-y: auto; padding-right: 4px;"></div>
+      </div>
+      
+      <!-- WARNA SIMBOL -->
+      <div id="symbol-color-box" style="display:none; margin-top: 16px; border-top: 1px solid var(--border); padding-top: 16px;">
+        <label>Warna Simbol Lingkaran:</label>
+        <input type="color" id="color-symbol-picker" class="cat-color-picker" value="#ffcc00" style="width: 100%; height: 36px; border-radius:8px;">
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title">Kontrol Layer</div>
-      <label>Tema Peta Dasar (Online)</label>
-      <select id="sel-basemap" style="margin-bottom: 12px;">
+      <div class="section-title">Pengaturan Peta Dasar</div>
+      <label>Tema Peta Dasar</label>
+      <select id="sel-basemap">
         <option value="dark" selected>Gelap (Dark Mode)</option>
         <option value="light">Terang (Light Mode)</option>
-        <option value="google-satellite">Satelit (Google Maps)</option>
-        <option value="google-hybrid">Hybrid (Google Maps)</option>
+        <option value="google-satellite">Satelit (Google)</option>
+        <option value="google-hybrid">Hybrid (Google)</option>
       </select>
-      
-      <label>Transparansi Area Peta</label>
+      <label style="display:flex; justify-content:space-between; margin-top: 16px;">Transparansi Area Poligon <span style="font-size:10px; color:var(--text-muted); font-weight: 600;">(Geser)</span></label>
       <input type="range" id="slider-opacity" min="0.1" max="1" step="0.1" value="0.8">
     </div>
 
-    <div class="section" style="border-bottom: none; display: flex; flex-direction: column; gap: 8px;">
-        <button class="btn-apply" id="btn-apply">Terapkan Perubahan</button>
-        <button class="btn-reset" id="btn-reset">Reset Pengaturan</button>
+    <div class="section" style="border-bottom: none; display: flex; flex-direction: column; gap: 12px; padding-bottom: 10px;">
+        <button class="btn-apply" id="btn-apply">Tampilkan Peta</button>
+        <div class="action-row">
+            <button class="btn-action" id="btn-table">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                Tabel Data
+            </button>
+            <button class="btn-action" id="btn-export">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Unduh PNG
+            </button>
+        </div>
+        <button class="btn-reset" id="btn-reset">Reset ke Pengaturan Awal</button>
     </div>
 
-    <!-- FOOTER SIDEBAR -->
     <div class="sidebar-footer">
-      Tim Podes BPS Provinsi Sulawesi Tenggara
+      Tim Podes<br>BPS Provinsi Sulawesi Tenggara
     </div>
   </div>
   <!-- /SIDEBAR KIRI -->
 
   <div id="map-container">
     <div id="map"></div>
-    <div id="map-info" style="position:absolute; bottom:10px; right:10px; background:rgba(13, 56, 23, 0.85); color:white; padding:5px 10px; border-radius:5px; font-size:11px; z-index:1000; font-weight: 600; pointer-events: none; border: 1px solid var(--gold);">
-      Hover desa untuk melihat data rinci.
-    </div>
     
-    <!-- INFO PANEL KLIK DESA -->
-    <div id="info-panel">
-      <button id="info-panel-close" title="Tutup">✕</button>
+    <!-- INFO PANEL PINTAR (GABUNGAN) -->
+    <div id="info-panel" class="glass-panel">
+      <button id="info-panel-close" title="Tutup" style="display: none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
       <div id="info-panel-content">
-        <!-- Konten dari JS -->
+        <div style="font-size:12px; font-weight:700; color:var(--text-main); text-align:center; padding: 4px 8px;">👆 Klik area untuk info detail</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- LEGENDA (Akan Dipindahkan ke Atas Leaflet Map Secara Otomatis) -->
-<div id="legend-box">
+<!-- MODAL TABEL DATA -->
+<div id="table-modal">
+  <div id="table-container">
+    <div id="table-header">
+      <span>Tabel Data Wilayah</span>
+      <button id="btn-close-table" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:20px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; transition: color 0.2s; border-radius: 8px;">✕</button>
+    </div>
+    <div id="table-body">
+      <table>
+        <thead id="table-head-content"></thead>
+        <tbody id="table-body-content"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- LEGENDA -->
+<div id="legend-box" class="glass-panel">
   <div id="legend-title">-</div>
-  
-  <!-- Legenda Kontinu -->
   <div id="legend-uni">
     <div id="legend-bar"></div>
     <div class="legend-labels"><span id="leg-min">-</span><span id="leg-max">-</span></div>
   </div>
-
-  <!-- Legenda Kategorik -->
-  <div id="legend-cat-help">💡 Pilih warna di bawah, lalu klik <b>Terapkan Perubahan</b></div>
+  
+  <!-- LEGENDA KATEGORI -->
+  <div id="legend-cat-help">Kategori Warna:</div>
   <div id="legend-cat"></div>
-
-  <!-- Legenda Bivariat -->
-  <div id="legend-bivariate">
-    <div class="biv-grid" id="biv-grid"></div>
-    <div class="biv-labels">
-      <span id="biv-v1-low"></span><span id="biv-v1-high"></span>
+  
+  <div id="legend-bivariate" style="display: none;">
+    <div style="display: flex; flex-direction: column; align-items: center; margin-top: 6px;">
+      <div style="display: flex; align-items: center;">
+        <div style="display: flex; flex-direction: column; align-items: center; margin-right: 14px;">
+          <span style="font-size: 16px; color: var(--text-muted); margin-bottom: 4px;">↑</span>
+          <span id="biv-v1-name" style="writing-mode: vertical-rl; transform: rotate(180deg); font-size: 10px; font-weight: 800; color: var(--text-main); letter-spacing: 0.05em; max-height: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">VAR 1</span>
+        </div>
+        <div class="biv-grid" id="biv-grid"></div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; margin-top: 12px; padding-left: 20px; width: 100%;">
+        <span id="biv-v2-name" style="font-size: 10px; font-weight: 800; color: var(--text-main); letter-spacing: 0.05em; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">VAR 2</span>
+        <span style="font-size: 16px; color: var(--text-muted); margin-left: 8px; line-height: 0.5;">→</span>
+      </div>
     </div>
-    <div style="text-align:center;font-size:10px;font-weight:700;color:#000000;margin-top:2px">
-      <span id="biv-v2-low"></span> → <span id="biv-v2-high"></span>
+  </div>
+  
+  <!-- LEGENDA SIMBOL (BARU) -->
+  <div id="legend-symbol" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+    <div style="font-size: 10px; color: var(--text-muted); font-weight: 800; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Ukuran Simbol:</div>
+    <div id="legend-symbol-name" style="font-size: 12px; font-weight: 800; color: var(--text-main); margin-bottom: 16px; line-height: 1.3;">VAR 2</div>
+    <div style="display: flex; align-items: flex-end; justify-content: space-around; padding: 0 10px;">
+       <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+           <div class="legend-sym-circle" style="width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; border: 1px solid rgba(0,0,0,0.2);"></div>
+           <span style="font-size: 9px; color: var(--text-muted); font-weight: 700;">Rendah</span>
+       </div>
+       <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+           <div class="legend-sym-circle" style="width: 24px; height: 24px; border-radius: 50%; background: #f59e0b; border: 1px solid rgba(0,0,0,0.2);"></div>
+           <span style="font-size: 9px; color: var(--text-muted); font-weight: 700;">Tinggi</span>
+       </div>
     </div>
   </div>
 </div>
@@ -711,28 +640,35 @@ select:focus { border-color: var(--gold); }
 <script>
 // KONFIGURASI PALET
 const PALETTES = [
-  { id:'YlOrRd', stops:['#ffffb2','#fecc5c','#fd8d3c','#f03b20','#bd0026'] },
-  { id:'Blues',  stops:['#eff3ff','#bdd7e7','#6baed6','#2171b5','#084594'] },
-  { id:'Greens', stops:['#f7fcf5','#c7e9c0','#74c476','#238b45','#00441b'] },
-  { id:'RdPu',   stops:['#feebe2','#fbb4b9','#f768a1','#c51b8a','#7a0177'] },
-  { id:'Set1',   stops:['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00'] }
+  { id:'Greens', stops:['#ecfdf5','#a7f3d0','#34d399','#059669','#022c22'] },
+  { id:'Blues',  stops:['#eff6ff','#bae6fd','#3b82f6','#1d4ed8','#1e3a8a'] },
+  { id:'YlOrRd', stops:['#fffbeb','#fde047','#f59e0b','#ef4444','#7f1d1d'] },
+  { id:'RdPu',   stops:['#fdf2f8','#fbcfe8','#ec4899','#be185d','#831843'] },
+  { id:'Set1',   stops:['#ef4444','#3b82f6','#10b981','#8b5cf6','#f59e0b'] }
 ];
 
-let geojsonData = null, csvRows = null, allCols = [];
-let leafletLayer = null;
-let selectedPalette = PALETTES[0]; 
-let selectedMethod = 'choropleth';
-let currentClasses = 5, currentOpacity = 0.8;
-let catColorMap = {}; 
-let colKab = null, colKec = null, colDesa = null;
+var geojsonData = null, csvRows = null, allCols = [];
+var currentFilteredFeatures = []; 
+var leafletLayer = null;
+var currentSelectedLayer = null;
+var selectedPalette = PALETTES[0]; 
+var selectedMethod = 'choropleth';
+var currentClasses = 5, currentOpacity = 0.8;
+var catColorMap = {}; 
+var colKab = null, colKec = null, colDesa = null;
+
+var currentSortCol = 'ID DESA';
+var currentSortAsc = true;
 
 // INIT MAP
 const map = L.map('map', { center: [-4.0, 122.5], zoom: 8, zoomControl: false });
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+
 let currentBasemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="https://carto.com/">CartoDB</a>'
+  attribution: '&copy; <a href="https://carto.com/">CartoDB</a>',
+  crossOrigin: true
 }).addTo(map);
 
-// PENAMBAHAN KONTROL LEGENDA KE MAP
 const legendControl = L.control({ position: 'bottomleft' });
 legendControl.onAdd = function() {
     const div = document.getElementById('legend-box');
@@ -742,13 +678,20 @@ legendControl.onAdd = function() {
 };
 legendControl.addTo(map);
 
-// INTERAKSI INFO PANEL KANAN ATAS
 const infoPanel = document.getElementById('info-panel');
 L.DomEvent.disableClickPropagation(infoPanel);
 L.DomEvent.disableScrollPropagation(infoPanel);
 
+function resetInfoPanel() {
+    const panel = document.getElementById('info-panel');
+    panel.classList.remove('has-data');
+    document.getElementById('info-panel-content').innerHTML = `<div style="font-size:12px; font-weight:700; color:var(--text-main); text-align:center; padding: 4px 8px;">👆 Klik area untuk info detail</div>`;
+    document.getElementById('info-panel-close').style.display = 'none';
+}
+
 document.getElementById('info-panel-close').addEventListener('click', () => {
-    infoPanel.style.display = 'none';
+    resetInfoPanel();
+    resetHighlight(); 
 });
 
 function getSafeNum(val) {
@@ -758,35 +701,79 @@ function getSafeNum(val) {
     return isNaN(parsed) ? null : parsed;
 }
 
-// ── FILE HANDLER ──
+// ── FILE HANDLER DENGAN PAPAPARSE UNTUK CSV ──
 document.getElementById('input-csv').onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const fileName = file.name.toLowerCase();
   const reader = new FileReader();
-  reader.onload = (f) => {
-    const text = f.target.result;
-    const lines = text.split('\n');
-    const headers = lines[0].split(',').map(h => h.trim());
-    allCols = headers;
-    csvRows = lines.slice(1).filter(l => l).map(l => {
-      const v = l.split(',');
-      let obj = {};
-      headers.forEach((h, i) => {
-        const val = v[i] ? v[i].trim() : "";
-        obj[h] = val; 
+
+  if (fileName.endsWith('.csv')) {
+      Papa.parse(file, {
+          header: true,
+          skipEmptyLines: true,
+          complete: function(results) {
+              if(results.data.length > 0) {
+                  allCols = results.meta.fields.map(k => k.trim());
+                  csvRows = results.data.map(row => {
+                      let newRow = {};
+                      for(let key in row) {
+                          newRow[key.trim()] = String(row[key]).trim();
+                      }
+                      return newRow;
+                  });
+              } else {
+                  csvRows = []; allCols = [];
+              }
+              document.getElementById('status-csv').textContent = '✅ Data Tabel Dimuat';
+              document.getElementById('status-csv').className = 'card-status ok';
+              checkReady();
+          },
+          error: function() {
+              alert("Gagal membaca CSV. Pastikan format file tidak rusak.");
+          }
       });
-      return obj;
-    });
-    document.getElementById('status-csv').textContent = '✅ File OK';
-    document.getElementById('status-csv').className = 'card-status ok';
-    checkReady();
-  };
-  reader.readAsText(e.target.files[0]);
+      
+  } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+      reader.onload = (f) => {
+        const data = new Uint8Array(f.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        
+        const json = XLSX.utils.sheet_to_json(worksheet, {raw: false, defval: ""});
+
+        if (json.length > 0) {
+            allCols = Object.keys(json[0]).map(k => k.trim());
+            csvRows = json.map(row => {
+                let newRow = {};
+                for(let key in row) {
+                    newRow[key.trim()] = String(row[key]).trim();
+                }
+                return newRow;
+            });
+        } else {
+            csvRows = [];
+            allCols = [];
+        }
+        
+        document.getElementById('status-csv').textContent = '✅ Data Tabel Dimuat';
+        document.getElementById('status-csv').className = 'card-status ok';
+        checkReady();
+      };
+      reader.readAsArrayBuffer(file);
+      
+  } else {
+      alert("Format file tidak didukung! Harap unggah file .csv, .xlsx, atau .xls.");
+  }
 };
 
 document.getElementById('input-geo').onchange = (e) => {
   const reader = new FileReader();
   reader.onload = (f) => {
     geojsonData = JSON.parse(f.target.result);
-    document.getElementById('status-geo').textContent = '✅ File OK';
+    document.getElementById('status-geo').textContent = '✅ Data Peta Dimuat';
     document.getElementById('status-geo').className = 'card-status ok';
     checkReady();
   };
@@ -797,7 +784,6 @@ function checkReady() {
   if (csvRows && geojsonData) {
     const btn = document.getElementById('btn-launch');
     btn.disabled = false;
-    btn.style.opacity = '1';
   }
 }
 
@@ -805,20 +791,16 @@ document.getElementById('btn-launch').onclick = () => {
   document.getElementById('upload-screen').style.display = 'none';
   document.getElementById('loading').style.display = 'flex';
   
-  // Jika diakses dari HP/Tablet, otomatis sembunyikan sidebar setelah klik mulai
   if(window.innerWidth <= 1024) {
       document.getElementById('sidebar').classList.add('hidden');
   }
-  setTimeout(initApp, 500);
+  setTimeout(initApp, 600);
 };
 
-// ── TOGGLE SIDEBAR ──
 document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
     const sidebar = document.getElementById('sidebar');
     sidebar.classList.toggle('hidden');
-    setTimeout(() => {
-        map.invalidateSize();
-    }, 300);
+    setTimeout(() => { map.invalidateSize(); }, 300);
 });
 
 function updateMethodVisibility() {
@@ -832,11 +814,8 @@ function updateMethodVisibility() {
 
     if (count === '1') {
         var2Block.style.display = 'none';
-        btnWarna.style.display = 'flex';
-        btnSimbol.style.display = 'flex';
-        btnJenks.style.display = 'flex';
-        btnBiv.style.display = 'none';
-        btnColorSymbol.style.display = 'none';
+        btnWarna.style.display = 'flex'; btnSimbol.style.display = 'flex'; btnJenks.style.display = 'flex';
+        btnBiv.style.display = 'none'; btnColorSymbol.style.display = 'none';
         if (selectedMethod === 'bivariate' || selectedMethod === 'color-symbol') {
             selectedMethod = 'choropleth';
             document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
@@ -844,11 +823,8 @@ function updateMethodVisibility() {
         }
     } else {
         var2Block.style.display = 'block';
-        btnWarna.style.display = 'none';
-        btnSimbol.style.display = 'none';
-        btnJenks.style.display = 'none';
-        btnBiv.style.display = 'flex';
-        btnColorSymbol.style.display = 'flex';
+        btnWarna.style.display = 'none'; btnSimbol.style.display = 'none'; btnJenks.style.display = 'none';
+        btnBiv.style.display = 'flex'; btnColorSymbol.style.display = 'flex';
         if (selectedMethod !== 'bivariate' && selectedMethod !== 'color-symbol') {
             selectedMethod = 'color-symbol';
             document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
@@ -859,7 +835,8 @@ function updateMethodVisibility() {
     typeContainer.style.display = selectedMethod === 'bivariate' ? 'none' : 'block';
 }
 
-// ── LOGIKA UTAMA (APP LOGIC) ──────────────────────────────
+const normalizeId = (id) => String(id).trim().replace(/^0+/, '');
+
 function initApp() {
   const sel1 = document.getElementById('sel-var1');
   const sel2 = document.getElementById('sel-var2');
@@ -867,7 +844,7 @@ function initApp() {
   
   sel1.innerHTML = '<option value="">-- Pilih Variabel --</option>';
   sel2.innerHTML = '<option value="">-- Pilih Variabel --</option>';
-  selKab.innerHTML = '<option value="ALL">Semua Kabupaten</option>';
+  selKab.innerHTML = '<option value="ALL">Semua Wilayah</option>';
   
   colKab = allCols.find(c => ['KAB', 'NMKAB', 'KABUPATEN', 'NAMA_KAB'].includes(c.toUpperCase())) || allCols.find(c => c.toUpperCase().includes('KAB'));
   colKec = allCols.find(c => ['KEC', 'NMKEC', 'KECAMATAN', 'NAMA_KEC'].includes(c.toUpperCase())) || allCols.find(c => c.toUpperCase().includes('KEC'));
@@ -880,8 +857,7 @@ function initApp() {
     }
   });
 
-  sel1.value = '';
-  sel2.value = '';
+  sel1.value = ''; sel2.value = '';
 
   const kabs = [...new Set(csvRows.map(r => colKab ? r[colKab] : (r.KAB || r.NMKAB || r.kab)))].filter(k=>k).sort();
   kabs.forEach(k => selKab.add(new Option(k, k)));
@@ -891,25 +867,34 @@ function initApp() {
   let csvIdCol = allCols.find(c => ['IDDESA', 'ID_DESA', 'KODE', 'KODE_DESA', 'ID'].includes(c.toUpperCase())) || allCols[0];
 
   geojsonData.features.forEach(f => {
-    let geoIdVal = f.properties.IDDESA || f.properties.iddesa || f.properties.kode || f.properties.KODE || f.properties.id || f.properties.ID;
+    let geoIdVal = f.properties.IDDESA || f.properties.iddesa || f.properties.kode || f.properties.KODE || f.properties.KODE_DESA || f.properties.kode_desa || f.properties.id || f.properties.ID;
     if (!geoIdVal) {
         const possibleKey = Object.keys(f.properties).find(k => k.toUpperCase().includes('ID') || k.toUpperCase().includes('KODE'));
         if (possibleKey) geoIdVal = f.properties[possibleKey];
     }
-    const match = csvRows.find(d => String(d[csvIdCol]).trim() === String(geoIdVal).trim());
-    if (match) Object.assign(f.properties, match);
+    
+    if (geoIdVal) {
+        const normGeoId = normalizeId(geoIdVal);
+        const match = csvRows.find(d => normalizeId(d[csvIdCol]) === normGeoId);
+        if (match) {
+            f.properties = { ...match, ...{ IDDESA: geoIdVal, _matched: true } }; 
+        } else {
+            f.properties._matched = false;
+        }
+    }
   });
 
   const grid = document.getElementById('palette-grid');
   grid.innerHTML = ''; 
-  PALETTES.forEach(p => {
+  PALETTES.forEach((p, idx) => {
     const d = document.createElement('div');
-    d.className = 'pal-btn';
+    d.className = 'pal-btn' + (idx===0?' selected':'');
     d.style.background = `linear-gradient(to right, ${p.stops.join(',')})`;
     d.onclick = () => { 
         selectedPalette = p; 
-        document.querySelectorAll('.pal-btn').forEach(x => x.style.borderColor = 'transparent');
-        d.style.borderColor = 'var(--ink)';
+        document.querySelectorAll('.pal-btn').forEach(x => x.classList.remove('selected'));
+        d.classList.add('selected');
+        catColorMap = {}; // Reset pewarnaan memori agar bergenerasi ulang
         applyViz(false); 
     };
     grid.appendChild(d);
@@ -917,16 +902,13 @@ function initApp() {
 
   document.getElementById('loading').style.display = 'none';
   updateMethodVisibility();
-  setTimeout(() => {
-    map.invalidateSize();
-    applyViz(true); 
-  }, 200);
+  setTimeout(() => { map.invalidateSize(); applyViz(true); }, 200);
 }
 
 function updateKecDropdown(kab) {
   const selKec = document.getElementById('sel-kec');
   if (!selKec) return;
-  selKec.innerHTML = '<option value="ALL">Semua Kecamatan</option>';
+  selKec.innerHTML = '<option value="ALL">Semua Wilayah</option>';
   if (!csvRows) return;
   const targetKab = String(kab).trim().toUpperCase();
   const filteredRows = kab === 'ALL' ? csvRows : csvRows.filter(r => {
@@ -941,7 +923,7 @@ function updateKecDropdown(kab) {
 function updateDesaDropdown(kec, kab) {
     const selDesa = document.getElementById('sel-desa');
     if (!selDesa) return;
-    selDesa.innerHTML = '<option value="ALL">Semua Desa</option>';
+    selDesa.innerHTML = '<option value="ALL">Semua Wilayah</option>';
     if (!csvRows) return;
 
     const targetKab = String(kab).trim().toUpperCase();
@@ -963,26 +945,56 @@ function getCentroid(feature) {
   try { return L.geoJSON(feature).getBounds().getCenter(); } catch(e) { return [0,0]; }
 }
 
+function resetHighlight() {
+    if (currentSelectedLayer) {
+        if (currentSelectedLayer.options.originalStyle) {
+            currentSelectedLayer.setStyle(currentSelectedLayer.options.originalStyle);
+        }
+        currentSelectedLayer = null;
+    }
+}
+
+function highlightLayer(layer) {
+    resetHighlight(); 
+    if (!layer.options.originalStyle) {
+        layer.options.originalStyle = {
+            weight: layer.options.weight,
+            color: layer.options.color
+        };
+    }
+    layer.setStyle({
+        weight: 3,
+        color: '#f59e0b'
+    });
+    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge && layer.bringToFront) {
+        layer.bringToFront();
+    }
+    currentSelectedLayer = layer;
+}
+
 function showInfoPanel(info, var1Name, var2Name, hasVar1, hasVar2) {
     const panel = document.getElementById('info-panel');
     const content = document.getElementById('info-panel-content');
+    panel.classList.add('has-data'); // Tambahkan kelas agar kotak menjadi membesar & solid
+
     let html = `<div style="line-height:1.4;">`;
-    html += `<span style="font-size:10px; color:var(--muted); font-weight:800;">ID: ${info.id}</span><br>`;
-    html += `<b style="font-size:15px; color:var(--text);">${info.d}</b><br>`;
-    html += `<span style="font-size:11px; color:var(--muted); font-weight:600;">Kec. ${info.c}, ${info.k}</span>`;
+    html += `<span style="font-size:10px; color:var(--text-muted); font-weight:800;">ID: ${info.id}</span><br>`;
+    html += `<b style="font-size:16px; color:var(--text-main); letter-spacing:0.02em;">${info.d}</b><br>`;
+    html += `<span style="font-size:12px; color:var(--text-muted); font-weight:600;">Kec. ${info.c}, ${info.k}</span>`;
     html += `</div>`;
-    html += `<div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); font-size:12px;">`;
+    html += `<div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border); font-size:13px;">`;
     if (!hasVar1) {
-         html += `<div style="font-style:italic; color:var(--muted); font-size:11px;">Belum ada variabel dipilih</div>`;
+         html += `<div style="font-style:italic; color:var(--text-muted); font-size:12px;">Belum ada variabel diaktifkan</div>`;
     } else {
-         html += `<div style="margin-bottom:8px;"><span style="font-size:10px; text-transform:uppercase; font-weight:700; color:var(--muted); display:block; margin-bottom:2px;">Warna Area: ${var1Name}</span><b style="font-size:14px; color:var(--ink);">${info.v1}</b></div>`;
+         html += `<div style="margin-bottom:12px;"><span style="font-size:10px; text-transform:uppercase; font-weight:800; color:var(--text-muted); display:block; margin-bottom:4px;">${var1Name}</span><b style="font-size:15px; color:var(--primary);">${info.v1}</b></div>`;
          if (hasVar2) {
-             html += `<div><span style="font-size:10px; text-transform:uppercase; font-weight:700; color:var(--muted); display:block; margin-bottom:2px;">Besaran Simbol: ${var2Name}</span><b style="font-size:14px; color:var(--ink);">${info.v2}</b></div>`;
+             html += `<div><span style="font-size:10px; text-transform:uppercase; font-weight:800; color:var(--text-muted); display:block; margin-bottom:4px;">${var2Name}</span><b style="font-size:15px; color:var(--primary);">${info.v2}</b></div>`;
          }
     }
     html += `</div>`;
     content.innerHTML = html;
     panel.style.display = 'block';
+    document.getElementById('info-panel-close').style.display = 'flex';
 }
 
 function applyViz(renderToMap = true) {
@@ -996,28 +1008,67 @@ function applyViz(renderToMap = true) {
   const isBiv = selectedMethod === 'bivariate';
   const isColorSymbol = selectedMethod === 'color-symbol';
   
+  const searchQ = document.getElementById('input-search').value.toLowerCase().trim();
+  
   const targetKab = String(kab).trim().toUpperCase();
   const targetKec = String(kec).trim().toUpperCase();
   const targetDesa = String(desa).trim().toUpperCase();
 
   const filtered = geojsonData.features.filter(f => {
+      if (var1 !== '' && f.properties._matched === false) return false;
+      
       const k = colKab ? f.properties[colKab] : (f.properties.KAB || f.properties.NMKAB || f.properties.kab);
       const c = colKec ? f.properties[colKec] : (f.properties.KEC || f.properties.NMKEC || f.properties.kec);
       const d = colDesa ? f.properties[colDesa] : (f.properties.DESA || f.properties.NMDESA || f.properties.desa);
+      
       const safeKab = String(k || '').trim().toUpperCase();
       const safeKec = String(c || '').trim().toUpperCase();
       const safeDesa = String(d || '').trim().toUpperCase();
-      return (kab === 'ALL' || safeKab === targetKab) && (kec === 'ALL' || safeKec === targetKec) && (desa === 'ALL' || safeDesa === targetDesa);
+      
+      const matchKab = kab === 'ALL' || safeKab === targetKab;
+      const matchKec = kec === 'ALL' || safeKec === targetKec;
+      const matchDesa = desa === 'ALL' || safeDesa === targetDesa;
+      
+      const matchSearch = searchQ === '' || safeDesa.toLowerCase().includes(searchQ) || safeKec.toLowerCase().includes(searchQ);
+      
+      return matchKab && matchKec && matchDesa && matchSearch;
   });
   
+  currentFilteredFeatures = filtered; 
+
   const legendUni = document.getElementById('legend-uni');
   const legendCat = document.getElementById('legend-cat');
   const legendCatHelp = document.getElementById('legend-cat-help');
   const legendBiv = document.getElementById('legend-bivariate');
+  const legendSym = document.getElementById('legend-symbol'); // TAMBAHAN
   const paletteSection = document.getElementById('palette-section');
   const classContainer = document.getElementById('classes-container');
   const choroBox = document.getElementById('choropleth-color-box');
+  const catBox = document.getElementById('categorical-color-box');
+  const catList = document.getElementById('cat-color-list');
   const symBox = document.getElementById('symbol-color-box');
+  
+  // PENGECEKAN TIPE DATA
+  let rawVals = filtered.map(f => f.properties[var1]);
+  let hasEmpty = false;
+  let cleanVals = [];
+  rawVals.forEach(v => {
+      if (v === null || v === undefined || String(v).trim() === '') {
+          hasEmpty = true;
+      } else {
+          cleanVals.push(String(v).trim());
+      }
+  });
+  let uniqueClean = [...new Set(cleanVals)];
+  let isAllNumeric = uniqueClean.length > 0 && uniqueClean.every(v => !isNaN(Number(v.replace(/,/g, '.'))));
+
+  // Mengatur visibilitas panel khusus numerik-kategorikal
+  const numCatSettings = document.getElementById('numeric-cat-settings');
+  if (varType === 'categorical' && isAllNumeric) {
+      numCatSettings.style.display = 'block';
+  } else {
+      numCatSettings.style.display = 'none';
+  }
   
   const getTooltipInfo = (f) => {
       const idVal = f.properties.IDDESA || f.properties.iddesa || f.properties.kode || f.properties.KODE || f.properties.KODE_DESA || f.properties.kode_desa || f.properties.id || f.properties.ID || '-';
@@ -1029,24 +1080,46 @@ function applyViz(renderToMap = true) {
       return { id: idVal, d, c, k, v1, v2 };
   };
 
+  const bindFeatureTooltip = (layer, info, var1Name, var1Val, var2Name, var2Val, type) => {
+      let html = `<div style="line-height:1.3;"><b style="font-size:13px; color:var(--text-main);">${info.d}</b><br><span style="font-size:10px; color:var(--text-muted);">${info.c}, ${info.k}</span></div>`;
+      
+      if (type === 'empty') {
+          html += `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:11px; font-style:italic; color:var(--text-muted);">Belum ada data visualisasi</div>`;
+      } else if (type === 'colorsymbol') {
+          html += `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:11px; color:var(--text-main);">${var1Name}: <b>${var1Val}</b><br>${var2Name}: <b>${var2Val}</b></div>`;
+      } else if (type === 'proportional') {
+          html += `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:11px; color:var(--text-main);">${var1Name}: <b>${var1Val}</b></div>`;
+      } else if (type === 'bivariate') {
+          html += `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:11px; color:var(--text-main);">${var1Name}: <b>${var1Val}</b><br>${var2Name}: <b>${var2Val}</b></div>`;
+      } else { // choropleth
+          html += `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:11px; color:var(--text-main);">${var1Name}: <b>${var1Val}</b></div>`;
+      }
+      
+      layer.bindTooltip(html, { className: 'podes-tooltip', sticky: true });
+  };
+
   if (!var1 || (count === '2' && !var2)) {
-    legendUni.style.display = 'none'; legendCat.style.display = 'none'; legendCatHelp.style.display = 'none'; legendBiv.style.display = 'none'; paletteSection.style.display = 'none'; classContainer.style.display = 'none';
-    document.getElementById('legend-title').textContent = 'Pilih Variabel';
+    legendUni.style.display = 'none'; legendCat.style.display = 'none'; legendCatHelp.style.display = 'none'; legendBiv.style.display = 'none'; legendSym.style.display = 'none'; paletteSection.style.display = 'none'; classContainer.style.display = 'none';
+    document.getElementById('legend-title').textContent = 'Menunggu Variabel';
     if (!renderToMap) return;
+    resetHighlight(); 
     if (leafletLayer) map.removeLayer(leafletLayer);
     leafletLayer = L.featureGroup();
     const defaultLayer = L.geoJSON({type:'FeatureCollection', features:filtered}, {
-        style: { fillColor: '#ffffff', weight: 1, color: 'rgba(255,255,255,0.3)', fillOpacity: currentOpacity * 0.2 },
+        style: { fillColor: '#ffffff', weight: 1, color: 'rgba(0,0,0,0.15)', fillOpacity: currentOpacity * 0.2 },
         onEachFeature: (f, l) => {
             const info = getTooltipInfo(f);
-            l.bindTooltip(`<div style="line-height:1.2;"><span style="font-size:9px; opacity:0.7;">ID: ${info.id}</span><br><b>${info.d}</b><br><span style="font-size:9.5px; opacity:0.8;">Kec. ${info.c}, ${info.k}</span></div><div style="margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.15); font-size:11px; font-style:italic;">Belum ada variabel dipilih</div>`);
-            l.on('click', () => showInfoPanel(info, '', '', false, false));
+            bindFeatureTooltip(l, info, '', '', '', '', 'empty');
+            l.on('click', (e) => { showInfoPanel(info, '', '', false, false); highlightLayer(e.target); });
         }
     });
     leafletLayer.addLayer(defaultLayer);
     leafletLayer.addTo(map);
     if (filtered.length > 0) { try { map.fitBounds(leafletLayer.getBounds(), { padding: [20, 20] }); } catch (err) {} }
-    document.getElementById('status-badge').textContent = `${filtered.length} Desa`;
+    
+    let matchedCount = filtered.filter(f => f.properties._matched).length;
+    document.getElementById('status-badge').textContent = `${matchedCount} Wilayah`;
+    
     let locText = "SULAWESI TENGGARA";
     if (kab !== 'ALL') { locText = kab; if (kec !== 'ALL') locText = kec + ", " + kab; if (desa !== 'ALL') locText = desa + ", " + kec + ", " + kab; }
     document.getElementById('header-location').textContent = locText;
@@ -1055,50 +1128,294 @@ function applyViz(renderToMap = true) {
 
   let colorFn;
   if (isBiv) {
-    legendUni.style.display = 'none'; legendCat.style.display = 'none'; legendCatHelp.style.display = 'none'; legendBiv.style.display = 'block'; paletteSection.style.display = 'none'; classContainer.style.display = 'none';
+    legendUni.style.display = 'none'; legendCat.style.display = 'none'; legendCatHelp.style.display = 'none'; legendBiv.style.display = 'block'; legendSym.style.display = 'none'; paletteSection.style.display = 'none'; classContainer.style.display = 'none';
     const values1 = filtered.map(f => getSafeNum(f.properties[var1])).filter(v => v !== null);
     const values2 = filtered.map(f => getSafeNum(f.properties[var2])).filter(v => v !== null);
     let q1 = chroma.limits(values1, 'q', 3), q2 = chroma.limits(values2, 'q', 3);
     const bivPal = ['#e8e8e8','#ace4e4','#5ac8c8','#dfb0d6','#a5add3','#5698b9','#be64ac','#8c62aa','#3b4994'];
     const getClass = (val, breaks) => { for(let i=0; i<3; i++){ if(val >= breaks[i] && val <= breaks[i+1]) return i; } return 2; };
-    colorFn = (v1Raw, v2Raw) => { const v1 = getSafeNum(v1Raw), v2 = getSafeNum(v2Raw); if (v1 === null || v2 === null) return '#444'; return bivPal[getClass(v1, q1) * 3 + getClass(v2, q2)]; };
+    colorFn = (v1Raw, v2Raw) => { const v1 = getSafeNum(v1Raw), v2 = getSafeNum(v2Raw); if (v1 === null || v2 === null) return '#e2e8f0'; return bivPal[getClass(v1, q1) * 3 + getClass(v2, q2)]; };
     const grid = document.getElementById('biv-grid'); grid.innerHTML = '';
     [6,7,8, 3,4,5, 0,1,2].forEach(i => { const cell = document.createElement('div'); cell.className = 'biv-cell'; cell.style.background = bivPal[i]; grid.appendChild(cell); });
-    document.getElementById('biv-v1-low').textContent = var1.substring(0,8) + ' Rndh'; document.getElementById('biv-v1-high').textContent = var1.substring(0,8) + ' Tngg';
-    document.getElementById('biv-v2-low').textContent = var2.substring(0,8) + ' Rndh'; document.getElementById('biv-v2-high').textContent = var2.substring(0,8) + ' Tngg';
-    document.getElementById('legend-title').textContent = `${var1.substring(0,10)} vs ${var2.substring(0,10)}`;
+    
+    document.getElementById('biv-v1-name').textContent = var1;
+    document.getElementById('biv-v2-name').textContent = var2;
+    document.getElementById('legend-title').textContent = 'Korelasi Bivariat';
   } else if (varType === 'categorical') {
-    legendUni.style.display = 'none'; legendCat.style.display = 'flex'; legendCatHelp.style.display = 'block'; legendBiv.style.display = 'none'; classContainer.style.display = 'none';
-    if (selectedMethod === 'proportional' || selectedMethod === 'color-symbol') { paletteSection.style.display = 'block'; choroBox.style.display = 'none'; symBox.style.display = 'block'; symBox.style.borderTop = 'none'; symBox.style.paddingTop = '0'; symBox.style.marginTop = '0'; } else { paletteSection.style.display = 'none'; }
-    const uniqueVals = [...new Set(filtered.map(f => String(f.properties[var1] || 'Kosong')))].sort();
-    const catScale = chroma.scale('Set2').colors(Math.max(3, uniqueVals.length));
-    uniqueVals.forEach((v, i) => { if (!catColorMap[v]) catColorMap[v] = catScale[i % catScale.length]; });
-    colorFn = (v) => catColorMap[String(v || 'Kosong')] || '#444';
+    legendUni.style.display = 'none'; legendBiv.style.display = 'none'; classContainer.style.display = 'none';
+    
+    let showChoro = isAllNumeric;
+    
+    if (selectedMethod === 'proportional') { 
+        paletteSection.style.display = 'block'; 
+        choroBox.style.display = showChoro ? 'block' : 'none'; 
+        catBox.style.display = 'block';
+        symBox.style.display = 'block'; 
+        symBox.style.borderTop = 'none'; 
+        symBox.style.paddingTop = '0'; 
+        symBox.style.marginTop = '0'; 
+        
+        legendCat.style.display = 'none';
+        legendCatHelp.style.display = 'none';
+        legendSym.style.display = 'block';
+        document.getElementById('legend-symbol-name').textContent = var1;
+        document.getElementById('legend-title').textContent = 'Visualisasi Simbol';
+    } else if (selectedMethod === 'color-symbol') { 
+        paletteSection.style.display = 'block'; 
+        choroBox.style.display = showChoro ? 'block' : 'none'; 
+        catBox.style.display = 'block';
+        symBox.style.display = 'block'; 
+        symBox.style.borderTop = '1px solid var(--border)'; 
+        symBox.style.paddingTop = '16px'; 
+        symBox.style.marginTop = '16px'; 
+        
+        legendCat.style.display = 'flex';
+        legendCatHelp.style.display = 'block';
+        legendSym.style.display = 'block';
+        document.getElementById('legend-symbol-name').textContent = var2;
+        document.getElementById('legend-title').textContent = var1;
+    } else { 
+        paletteSection.style.display = 'block'; 
+        choroBox.style.display = showChoro ? 'block' : 'none'; 
+        catBox.style.display = 'block';
+        symBox.style.display = 'none'; 
+        
+        legendCat.style.display = 'flex';
+        legendCatHelp.style.display = 'block';
+        legendSym.style.display = 'none';
+        document.getElementById('legend-title').textContent = var1;
+    }
+    
+    // PEMBAGIAN RANGE UNTUK DATA ANGKA, ATAU STRING BIASA UNTUK TEKS
+    let uniqueVals = [];
+    let rangeMap = [];
+    
+    if (isAllNumeric) {
+        let numericVals = uniqueClean.map(v => Number(v.replace(/,/g, '.')));
+        let catClasses = parseInt(document.getElementById('slider-cat-classes').value);
+        let catMethod = document.getElementById('sel-cat-method').value;
+        
+        let uniqueNumeric = [...new Set(numericVals)].sort((a,b)=>a-b);
+        
+        if (uniqueNumeric.length <= catClasses) {
+            uniqueNumeric.forEach(val => {
+                let label = String(val);
+                uniqueVals.push(label);
+                rangeMap.push({ min: val, max: val, label: label, isExact: true });
+            });
+        } else {
+            let limits = chroma.limits(numericVals, catMethod, catClasses);
+            limits = [...new Set(limits)]; 
+            for (let i = 0; i < limits.length - 1; i++) {
+                let formatNum = (num) => Number.isInteger(num) ? num : parseFloat(num.toFixed(2));
+                let label = `${formatNum(limits[i])} - ${formatNum(limits[i+1])}`;
+                uniqueVals.push(label);
+                rangeMap.push({ min: limits[i], max: limits[i+1], label: label, isExact: false });
+            }
+        }
+    } else {
+        uniqueVals = uniqueClean.sort();
+    }
+    
+    if (hasEmpty) uniqueVals.push('Kosong');
+    
+    // Penentuan Skema Warna
+    const vibrantColors = ['#059669', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#0ea5e9', '#d946ef', '#84cc16', '#14b8a6', '#f97316'];
+    
+    let gradColors = [];
+    if (isAllNumeric && uniqueVals.length > 0) {
+         let stops = selectedPalette.id === 'custom' ? [document.getElementById('color-grad-start').value, document.getElementById('color-grad-end').value] : selectedPalette.stops;
+         let validLen = hasEmpty ? uniqueVals.length - 1 : uniqueVals.length;
+         if (validLen > 1) {
+             gradColors = chroma.scale(stops).colors(validLen);
+         } else if (validLen === 1) {
+             gradColors = [stops[stops.length-1]];
+         }
+    }
+
+    let textCatIdx = 0;
+    uniqueVals.forEach((v, idx) => { 
+        if (!catColorMap[v]) {
+            if (v === 'Kosong') {
+                catColorMap[v] = '#e2e8f0';
+            } else if (isAllNumeric && gradColors.length > 0) {
+                catColorMap[v] = gradColors[idx];
+            } else {
+                catColorMap[v] = vibrantColors[textCatIdx % vibrantColors.length];
+                textCatIdx++;
+            }
+        } 
+    });
+    
+    colorFn = (v) => {
+        if (v === null || v === undefined || String(v).trim() === '') return catColorMap['Kosong'] || '#e2e8f0';
+        
+        if (isAllNumeric) {
+            let numV = Number(String(v).replace(/,/g, '.'));
+            let foundRange = rangeMap.find(r => r.isExact ? numV === r.min : (numV >= r.min && numV <= r.max));
+            if(!foundRange && rangeMap.length > 0) {
+                if (numV < rangeMap[0].min) foundRange = rangeMap[0];
+                if (numV > rangeMap[rangeMap.length-1].max) foundRange = rangeMap[rangeMap.length-1];
+            }
+            return foundRange ? (catColorMap[foundRange.label] || '#e2e8f0') : '#e2e8f0';
+        } else {
+            return catColorMap[String(v).trim()] || '#e2e8f0';
+        }
+    };
+
+    // Render Pengaturan Warna Panel Kiri
+    const currentLabels = Array.from(catList.querySelectorAll('.sidebar-cat-label')).map(el => el.textContent);
+    const needsRebuild = currentLabels.length !== uniqueVals.length || !uniqueVals.every((v, i) => v === currentLabels[i]);
+
+    if (needsRebuild) {
+        catList.innerHTML = '';
+        uniqueVals.forEach(v => {
+            const item = document.createElement('div');
+            item.style.display = 'flex';
+            item.style.alignItems = 'center';
+            item.style.justifyContent = 'space-between';
+            item.style.background = 'var(--bg-surface)';
+            item.style.padding = '8px 12px';
+            item.style.borderRadius = '8px';
+            item.style.border = '1px solid var(--border)';
+            item.style.marginBottom = '8px';
+
+            const label = document.createElement('span');
+            label.className = 'sidebar-cat-label';
+            label.textContent = v;
+            label.style.fontSize = '11px';
+            label.style.fontWeight = '700';
+            label.style.color = 'var(--text-main)';
+            label.style.whiteSpace = 'nowrap';
+            label.style.overflow = 'hidden';
+            label.style.textOverflow = 'ellipsis';
+            label.style.maxWidth = '180px';
+            label.title = v;
+
+            const colorInput = document.createElement('input');
+            colorInput.type = 'color';
+            colorInput.className = 'cat-color-picker';
+            colorInput.value = chroma(catColorMap[v]).hex();
+            colorInput.style.width = '28px';
+            colorInput.style.height = '28px';
+            colorInput.style.flexShrink = '0';
+            
+            colorInput.addEventListener('input', (e) => { 
+                catColorMap[v] = e.target.value; 
+                applyViz(false);
+            });
+
+            item.appendChild(label);
+            item.appendChild(colorInput);
+            catList.appendChild(item);
+        });
+    }
+
+    // Render Legenda Kaca Mengambang di Peta
     legendCat.innerHTML = '';
-    uniqueVals.forEach(v => { const item = document.createElement('div'); item.className = 'cat-item'; const colorInput = document.createElement('input'); colorInput.type = 'color'; colorInput.className = 'cat-color-picker'; colorInput.value = chroma(catColorMap[v]).hex(); const label = document.createElement('span'); label.textContent = v; item.appendChild(colorInput); item.appendChild(label); legendCat.appendChild(item); colorInput.addEventListener('input', (e) => { catColorMap[v] = e.target.value; }); });
-    document.getElementById('legend-title').textContent = isColorSymbol ? `Warna: ${var1} | Simbol: ${var2}` : var1;
+    uniqueVals.forEach(v => { 
+        const item = document.createElement('div'); 
+        item.className = 'cat-item'; 
+
+        const colorBox = document.createElement('div');
+        colorBox.style.width = '18px';
+        colorBox.style.height = '18px';
+        colorBox.style.borderRadius = '4px';
+        colorBox.style.backgroundColor = chroma(catColorMap[v]).hex();
+        colorBox.style.border = '1px solid rgba(0,0,0,0.15)';
+        colorBox.style.flexShrink = '0';
+
+        const label = document.createElement('span'); 
+        label.textContent = v; 
+        
+        item.appendChild(colorBox); 
+        item.appendChild(label); 
+        legendCat.appendChild(item); 
+    });
+
   } else {
-    legendUni.style.display = 'block'; legendCat.style.display = 'none'; legendCatHelp.style.display = 'none'; legendBiv.style.display = 'none'; paletteSection.style.display = 'block'; classContainer.style.display = 'block';
-    if (selectedMethod === 'proportional') { choroBox.style.display = 'none'; symBox.style.display = 'block'; symBox.style.borderTop = 'none'; symBox.style.paddingTop = '0'; symBox.style.marginTop = '0'; } else if (selectedMethod === 'color-symbol') { choroBox.style.display = 'block'; symBox.style.display = 'block'; symBox.style.borderTop = '1px dashed var(--border)'; symBox.style.paddingTop = '12px'; symBox.style.marginTop = '12px'; } else { choroBox.style.display = 'block'; symBox.style.display = 'none'; }
+    // MODE KONTINU NORMAL
+    legendCat.style.display = 'none'; legendCatHelp.style.display = 'none'; legendBiv.style.display = 'none'; paletteSection.style.display = 'block'; classContainer.style.display = 'block';
+    
+    if (selectedMethod === 'proportional') { 
+        paletteSection.style.display = 'block'; 
+        choroBox.style.display = 'none'; 
+        catBox.style.display = 'none';
+        symBox.style.display = 'block'; 
+        symBox.style.borderTop = 'none'; 
+        symBox.style.paddingTop = '0'; 
+        symBox.style.marginTop = '0'; 
+        
+        legendUni.style.display = 'none';
+        legendSym.style.display = 'block';
+        document.getElementById('legend-symbol-name').textContent = var1;
+        document.getElementById('legend-title').textContent = 'Visualisasi Simbol';
+    } else if (selectedMethod === 'color-symbol') { 
+        paletteSection.style.display = 'block'; 
+        choroBox.style.display = 'block'; 
+        catBox.style.display = 'none';
+        symBox.style.display = 'block'; 
+        symBox.style.borderTop = '1px solid var(--border)'; 
+        symBox.style.paddingTop = '16px'; 
+        symBox.style.marginTop = '16px'; 
+        
+        legendUni.style.display = 'block';
+        legendSym.style.display = 'block';
+        document.getElementById('legend-symbol-name').textContent = var2;
+        document.getElementById('legend-title').textContent = var1;
+    } else { 
+        paletteSection.style.display = 'block'; 
+        choroBox.style.display = 'block'; 
+        catBox.style.display = 'none';
+        symBox.style.display = 'none'; 
+        
+        legendUni.style.display = 'block';
+        legendSym.style.display = 'none';
+        document.getElementById('legend-title').textContent = var1;
+    }
+
     const vals = filtered.map(f => getSafeNum(f.properties[var1])).filter(v => v !== null);
     if(vals.length === 0) return;
     let min = Math.min(...vals), max = Math.max(...vals);
     let limits = selectedMethod === 'jenks' && vals.length > currentClasses ? chroma.limits(vals, 'k', currentClasses) : currentClasses;
     let scale = chroma.scale(selectedPalette.stops).domain([min, max]).classes(limits);
-    colorFn = (vRaw) => { const v = getSafeNum(vRaw); return v !== null ? scale(v) : '#444'; };
+    colorFn = (vRaw) => { const v = getSafeNum(vRaw); return v !== null ? scale(v) : '#e2e8f0'; };
     document.getElementById('leg-min').textContent = min.toLocaleString('id-ID'); document.getElementById('leg-max').textContent = max.toLocaleString('id-ID'); document.getElementById('legend-bar').style.background = `linear-gradient(to right, ${selectedPalette.stops.join(',')})`;
-    document.getElementById('legend-title').textContent = isColorSymbol ? `Warna: ${var1} | Simbol: ${var2}` : var1;
+    document.getElementById('legend-title').textContent = var1;
   }
 
+  // JIKA TIDAK BOLEH RENDER PETA, STOP DI SINI (Tombol Tampilkan Peta yang mengeksekusi render)
   if (!renderToMap) return;
+  
+  resetHighlight(); 
   if (leafletLayer) map.removeLayer(leafletLayer);
   leafletLayer = L.featureGroup();
   const symColorVal = document.getElementById('color-symbol-picker').value;
+  
+  // Terapkan warna ke bulatan di legenda simbol
+  document.querySelectorAll('.legend-sym-circle').forEach(el => {
+      el.style.backgroundColor = symColorVal;
+  });
+
+  let globalMaxRadiusMeters = 2000;
+  if ((isColorSymbol || selectedMethod === 'proportional') && filtered.length > 0) {
+      let totalDist = 0; let validCount = 0;
+      filtered.forEach(f => {
+          try {
+              const bounds = L.geoJSON(f).getBounds();
+              const dist = bounds.getCenter().distanceTo(bounds.getNorthWest());
+              if (!isNaN(dist) && dist > 0) { totalDist += dist; validCount++; }
+          } catch(e){}
+      });
+      if (validCount > 0) {
+          globalMaxRadiusMeters = (totalDist / validCount) * 0.6; 
+      }
+  }
 
   if (isColorSymbol) {
     const polyLayer = L.geoJSON({type:'FeatureCollection', features:filtered}, {
-      style: (f) => ({ fillColor: colorFn(f.properties[var1]), weight: 1, color: 'rgba(255,255,255,0.4)', fillOpacity: currentOpacity }),
-      onEachFeature: (f, l) => { const info = getTooltipInfo(f); l.bindTooltip(`<div style="line-height:1.2;"><span style="font-size:9px; opacity:0.7;">ID: ${info.id}</span><br><b>${info.d}</b><br><span style="font-size:9.5px; opacity:0.8;">Kec. ${info.c}, ${info.k}</span></div><div style="margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.15); font-size:11px;">Warna (${var1}): <b>${info.v1}</b><br>Simbol (${var2}): <b>${info.v2}</b></div>`); l.on('click', () => showInfoPanel(info, var1, var2, true, true)); }
+      style: (f) => ({ fillColor: colorFn(f.properties[var1]), weight: 1, color: 'rgba(0,0,0,0.1)', fillOpacity: currentOpacity }),
+      onEachFeature: (f, l) => { const info = getTooltipInfo(f); bindFeatureTooltip(l, info, var1, info.v1, var2, info.v2, 'colorsymbol'); l.on('click', (e) => { showInfoPanel(info, var1, var2, true, true); highlightLayer(e.target); }); }
     });
     leafletLayer.addLayer(polyLayer);
     const vals2 = filtered.map(f => getSafeNum(f.properties[var2])).filter(v => v !== null);
@@ -1106,9 +1423,13 @@ function applyViz(renderToMap = true) {
         const max2 = Math.max(...vals2);
         filtered.forEach(f => {
           const val2 = getSafeNum(f.properties[var2]); if (val2 === null) return;
-          const m = L.circleMarker(getCentroid(f), { radius: Math.sqrt(val2 / max2) * 25 || 3, fillColor: symColorVal, color: 'var(--ink)', weight: 1.5, fillOpacity: currentOpacity });
-          const info = getTooltipInfo(f); m.bindTooltip(`<div style="line-height:1.2;"><span style="font-size:9px; opacity:0.7;">ID: ${info.id}</span><br><b>${info.d}</b><br><span style="font-size:9.5px; opacity:0.8;">Kec. ${info.c}, ${info.k}</span></div><div style="margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.15); font-size:11px;">Warna (${var1}): <b>${info.v1}</b><br>Simbol (${var2}): <b>${val2.toLocaleString('id-ID')}</b></div>`);
-          m.on('click', () => showInfoPanel(info, var1, var2, true, true)); leafletLayer.addLayer(m);
+          
+          let r = Math.sqrt(val2 / max2) * globalMaxRadiusMeters;
+          if (r < globalMaxRadiusMeters * 0.08) r = globalMaxRadiusMeters * 0.08;
+
+          const m = L.circle(getCentroid(f), { radius: r, fillColor: symColorVal, color: '#ffffff', weight: 1.5, fillOpacity: 0.9 });
+          const info = getTooltipInfo(f); bindFeatureTooltip(m, info, var1, info.v1, var2, val2.toLocaleString('id-ID'), 'colorsymbol');
+          m.on('click', (e) => { showInfoPanel(info, var1, var2, true, true); highlightLayer(e.target); }); leafletLayer.addLayer(m);
         });
     }
   } else if (selectedMethod === 'proportional') {
@@ -1117,74 +1438,255 @@ function applyViz(renderToMap = true) {
         const max = Math.max(...vals);
         filtered.forEach(f => {
           const val = getSafeNum(f.properties[var1]); if (val === null) return;
-          const m = L.circleMarker(getCentroid(f), { radius: Math.sqrt(val / max) * 25 || 3, fillColor: symColorVal, color: '#fff', weight: 1, fillOpacity: currentOpacity });
-          const info = getTooltipInfo(f); m.bindTooltip(`<div style="line-height:1.2;"><span style="font-size:9px; opacity:0.7;">ID: ${info.id}</span><br><b>${info.d}</b><br><span style="font-size:9.5px; opacity:0.8;">Kec. ${info.c}, ${info.k}</span></div><div style="margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.15); font-size:11px;">${var1}: <b>${val.toLocaleString('id-ID')}</b></div>`);
-          m.on('click', () => showInfoPanel(info, var1, '', true, false)); leafletLayer.addLayer(m);
+          
+          let r = Math.sqrt(val / max) * globalMaxRadiusMeters;
+          if (r < globalMaxRadiusMeters * 0.08) r = globalMaxRadiusMeters * 0.08;
+
+          const m = L.circle(getCentroid(f), { radius: r, fillColor: symColorVal, color: '#fff', weight: 1, fillOpacity: 0.8 });
+          const info = getTooltipInfo(f); bindFeatureTooltip(m, info, var1, val.toLocaleString('id-ID'), '', '', 'proportional');
+          m.on('click', (e) => { showInfoPanel(info, var1, '', true, false); highlightLayer(e.target); }); leafletLayer.addLayer(m);
         });
     }
   } else {
     const basePolys = L.geoJSON({type:'FeatureCollection', features:filtered}, {
-      style: (f) => ({ fillColor: isBiv ? colorFn(f.properties[var1], f.properties[var2]) : colorFn(f.properties[var1]), weight: 1, color: 'rgba(255,255,255,0.4)', fillOpacity: currentOpacity }),
-      onEachFeature: (f, l) => { const info = getTooltipInfo(f); l.bindTooltip(`<div style="line-height:1.2;"><span style="font-size:9px; opacity:0.7;">ID: ${info.id}</span><br><b>${info.d}</b><br><span style="font-size:9.5px; opacity:0.8;">Kec. ${info.c}, ${info.k}</span></div><div style="margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.15); font-size:11px;">${var1}: <b>${info.v1}</b>` + (isBiv ? `<br>${var2}: <b>${info.v2}</b>` : '') + `</div>`); l.on('click', () => showInfoPanel(info, var1, var2, true, count==='2')); }
+      style: (f) => ({ fillColor: isBiv ? colorFn(f.properties[var1], f.properties[var2]) : colorFn(f.properties[var1]), weight: 1, color: 'rgba(0,0,0,0.1)', fillOpacity: currentOpacity }),
+      onEachFeature: (f, l) => { const info = getTooltipInfo(f); bindFeatureTooltip(l, info, var1, info.v1, var2, info.v2, isBiv ? 'bivariate' : 'choropleth'); l.on('click', (e) => { showInfoPanel(info, var1, var2, true, count==='2'); highlightLayer(e.target); }); }
     });
     leafletLayer.addLayer(basePolys);
   }
   leafletLayer.addTo(map);
   if (filtered.length > 0) { try { map.fitBounds(leafletLayer.getBounds(), { padding: [20, 20] }); } catch (err) {} }
-  document.getElementById('status-badge').textContent = `${filtered.length} Desa`;
+  
+  // PERBAIKAN: Menghitung hanya data yang matched dengan CSV
+  let matchedCount = filtered.filter(f => f.properties._matched).length;
+  document.getElementById('status-badge').textContent = `${matchedCount} Wilayah`;
+  
   let locText = "SULAWESI TENGGARA"; 
   if (kab !== 'ALL') { locText = kab; if (kec !== 'ALL') locText = kec + ", " + kab; if (desa !== 'ALL') locText = desa + ", " + kec + ", " + kab; } 
   document.getElementById('header-location').textContent = locText;
 }
 
-const handleCustomGrad = () => { const cStart = document.getElementById('color-grad-start').value, cEnd = document.getElementById('color-grad-end').value; document.querySelectorAll('.pal-btn').forEach(x => x.style.borderColor = 'transparent'); selectedPalette = { id: 'custom', stops: [cStart, cEnd] }; applyViz(false); };
-document.getElementById('color-grad-start').addEventListener('input', handleCustomGrad); document.getElementById('color-grad-end').addEventListener('input', handleCustomGrad);
+const handleCustomGrad = () => { 
+    const cStart = document.getElementById('color-grad-start').value;
+    const cEnd = document.getElementById('color-grad-end').value; 
+    document.querySelectorAll('.pal-btn').forEach(x => x.classList.remove('selected')); 
+    selectedPalette = { id: 'custom', stops: [cStart, cEnd] }; 
+    catColorMap = {}; // Reset pewarnaan memori agar bergenerasi ulang
+    applyViz(false); 
+};
+document.getElementById('color-grad-start').addEventListener('input', handleCustomGrad); 
+document.getElementById('color-grad-end').addEventListener('input', handleCustomGrad);
 
+// TOMBOL UTAMA TAMPILKAN PETA
 document.getElementById('btn-apply').onclick = () => { 
-    document.getElementById('info-panel').style.display = 'none'; 
+    resetInfoPanel(); 
+    resetHighlight();
     applyViz(true); 
-    // Otomatis tutup sidebar di HP/Tablet setelah klik Terapkan Perubahan
-    if(window.innerWidth <= 1024) {
-        document.getElementById('sidebar').classList.add('hidden');
-    }
+    if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.add('hidden');
 };
 
 document.getElementById('btn-reset').addEventListener('click', () => {
-    document.getElementById('info-panel').style.display = 'none'; document.getElementById('sel-kab').value = 'ALL'; updateKecDropdown('ALL'); document.getElementById('sel-desa').value = 'ALL'; document.getElementById('sel-var-count').value = '1'; updateMethodVisibility(); document.getElementById('sel-var-type').value = 'continuous'; const sel1 = document.getElementById('sel-var1'), sel2 = document.getElementById('sel-var2'); if (sel1.options.length > 0) sel1.value = ''; if (sel2.options.length > 0) sel2.value = ''; document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active')); document.querySelector('[data-method="choropleth"]').classList.add('active'); selectedMethod = 'choropleth'; 
+    resetInfoPanel(); document.getElementById('input-search').value = ''; document.getElementById('sel-kab').value = 'ALL'; updateKecDropdown('ALL'); document.getElementById('sel-desa').value = 'ALL'; document.getElementById('sel-var-count').value = '1'; updateMethodVisibility(); document.getElementById('sel-var-type').value = 'continuous'; const sel1 = document.getElementById('sel-var1'), sel2 = document.getElementById('sel-var2'); if (sel1.options.length > 0) sel1.value = ''; if (sel2.options.length > 0) sel2.value = ''; document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active')); document.querySelector('[data-method="choropleth"]').classList.add('active'); selectedMethod = 'choropleth'; 
+    resetHighlight();
     document.getElementById('slider-classes').value = 5; document.getElementById('val-classes').textContent = 5; currentClasses = 5; 
-    document.getElementById('slider-opacity').value = 0.8; currentOpacity = 0.8; selectedPalette = PALETTES[0]; document.querySelectorAll('.pal-btn').forEach(x => x.style.borderColor = 'transparent'); document.getElementById('color-grad-start').value = '#f4fcf6'; document.getElementById('color-grad-end').value = '#169c38'; document.getElementById('color-symbol-picker').value = '#ffcc00';
-    document.getElementById('sel-basemap').value = 'dark'; map.removeLayer(currentBasemap); currentBasemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://carto.com/">CartoDB</a>' }).addTo(map);
-    applyViz(true);
+    document.getElementById('slider-opacity').value = 0.8; currentOpacity = 0.8; selectedPalette = PALETTES[0]; document.querySelectorAll('.pal-btn').forEach((x, i) => { if(i===0) x.classList.add('selected'); else x.classList.remove('selected'); }); 
+    document.getElementById('color-grad-start').value = '#d1fae5'; document.getElementById('color-grad-end').value = '#047857'; document.getElementById('color-symbol-picker').value = '#ffcc00';
+    document.getElementById('sel-basemap').value = 'dark'; document.getElementById('map').style.background = '#111827'; map.removeLayer(currentBasemap); currentBasemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://carto.com/">CartoDB</a>', crossOrigin: true }).addTo(map);
     
-    // Otomatis tutup sidebar di HP/Tablet setelah klik Reset
-    if(window.innerWidth <= 1024) {
-        document.getElementById('sidebar').classList.add('hidden');
+    // Hapus memori kustom warna kategori
+    catColorMap = {};
+    document.getElementById('categorical-color-box').style.display = 'none';
+    
+    applyViz(true);
+    if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.add('hidden');
+});
+
+document.getElementById('input-search').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') {
+        resetInfoPanel(); 
+        resetHighlight();
+        applyViz(true);
     }
+});
+
+function renderTable() {
+    const thead = document.getElementById('table-head-content');
+    const tbody = document.getElementById('table-body-content');
+    const var1 = document.getElementById('sel-var1').value;
+    const var2 = document.getElementById('sel-var2').value;
+    const useVar2 = document.getElementById('sel-var-count').value === '2';
+    
+    let tableData = currentFilteredFeatures.map(f => {
+        const props = f.properties;
+        return {
+            'ID DESA': props.IDDESA || props.iddesa || props.kode || props.KODE || '-',
+            'KABUPATEN': colKab ? props[colKab] : (props.KAB || props.NMKAB || '-'),
+            'KECAMATAN': colKec ? props[colKec] : (props.KEC || props.NMKEC || '-'),
+            'DESA': colDesa ? props[colDesa] : (props.DESA || props.NMDESA || '-'),
+            [var1]: var1 ? (props[var1] || '-') : '',
+            [var2]: (useVar2 && var2) ? (props[var2] || '-') : ''
+        };
+    });
+
+    tableData.sort((a, b) => {
+        let valA = a[currentSortCol];
+        let valB = b[currentSortCol];
+
+        let numA = parseFloat(valA);
+        let numB = parseFloat(valB);
+
+        if (!isNaN(numA) && !isNaN(numB) && valA !== '-' && valB !== '-') {
+            return currentSortAsc ? numA - numB : numB - numA;
+        } else {
+            let strA = String(valA).toLowerCase();
+            let strB = String(valB).toLowerCase();
+            if (strA < strB) return currentSortAsc ? -1 : 1;
+            if (strA > strB) return currentSortAsc ? 1 : -1;
+            return 0;
+        }
+    });
+
+    let cols = ['ID DESA', 'KABUPATEN', 'KECAMATAN', 'DESA'];
+    if(var1) cols.push(var1);
+    if(useVar2 && var2) cols.push(var2);
+
+    let thHtml = '<tr>';
+    cols.forEach(col => {
+        let icon = currentSortCol === col ? (currentSortAsc ? '▲' : '▼') : '<span style="opacity:0.2">↕</span>';
+        thHtml += `<th class="sortable" data-col="${col}">${col} <span class="sort-icon">${icon}</span></th>`;
+    });
+    thHtml += '</tr>';
+    thead.innerHTML = thHtml;
+
+    thead.querySelectorAll('th.sortable').forEach(th => {
+        th.addEventListener('click', (e) => {
+            let col = e.currentTarget.getAttribute('data-col');
+            if (currentSortCol === col) {
+                currentSortAsc = !currentSortAsc; 
+            } else {
+                currentSortCol = col;
+                currentSortAsc = true; 
+            }
+            renderTable(); 
+        });
+    });
+
+    let trHtml = '';
+    tableData.forEach(row => {
+        trHtml += `<tr>`;
+        cols.forEach(col => {
+            trHtml += `<td>${row[col]}</td>`;
+        });
+        trHtml += `</tr>`;
+    });
+    tbody.innerHTML = trHtml;
+}
+
+document.getElementById('btn-table').addEventListener('click', () => {
+    if(!csvRows || !geojsonData) return;
+    currentSortCol = 'ID DESA';
+    currentSortAsc = true;
+    renderTable();
+    document.getElementById('table-modal').style.display = 'flex';
+});
+
+document.getElementById('btn-close-table').addEventListener('click', () => {
+    document.getElementById('table-modal').style.display = 'none';
+});
+
+document.getElementById('btn-export').addEventListener('click', () => {
+    const btn = document.getElementById('btn-export');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = "Memproses...";
+    btn.disabled = true;
+
+    const mapNode = document.getElementById('map-container');
+    const currentBg = document.getElementById('map').style.background;
+    domtoimage.toPng(mapNode, { bgcolor: currentBg || '#111827' })
+        .then(function (dataUrl) {
+            const link = document.createElement('a');
+            link.download = 'Peta_PODES_Sultra.png';
+            link.href = dataUrl;
+            link.click();
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        })
+        .catch(function (error) {
+            console.error('Oops, tidak bisa mengunduh gambar!', error);
+            alert('Gagal mengunduh peta. Pastikan mode Basemap sesuai.');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
 });
 
 document.getElementById('sel-basemap').addEventListener('change', (e) => {
     const val = e.target.value;
     map.removeLayer(currentBasemap);
     let url = '', attr = '&copy; <a href="https://carto.com/">CartoDB</a>';
-    if (val === 'dark') url = 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png';
-    else if (val === 'light') url = 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png';
-    else if (val === 'google-satellite') { url = 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'; attr = '&copy; Google Maps'; }
-    else if (val === 'google-hybrid') { url = 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'; attr = '&copy; Google Maps'; }
-    currentBasemap = L.tileLayer(url, { attribution: attr }).addTo(map);
+    
+    if (val === 'dark') {
+        url = 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png';
+        document.getElementById('map').style.background = '#111827';
+    } else if (val === 'light') {
+        url = 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png';
+        document.getElementById('map').style.background = '#e2e8f0';
+    } else if (val === 'google-satellite') { 
+        url = 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'; 
+        attr = '&copy; Google Maps'; 
+        document.getElementById('map').style.background = '#111827';
+    } else if (val === 'google-hybrid') { 
+        url = 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'; 
+        attr = '&copy; Google Maps'; 
+        document.getElementById('map').style.background = '#111827';
+    }
+    
+    currentBasemap = L.tileLayer(url, { attribution: attr, crossOrigin: true }).addTo(map);
 });
 
-document.getElementById('sel-var1').addEventListener('change', () => applyViz(false));
+// DETEKSI OTOMATIS TIPE DATA
+document.getElementById('sel-var1').addEventListener('change', (e) => {
+    catColorMap = {}; // Reset memori warna agar data dari variabel sebelumnya tidak bocor
+    const varName = e.target.value;
+    if (varName && currentFilteredFeatures && currentFilteredFeatures.length > 0) {
+        let isNumeric = true;
+        let hasData = false;
+        
+        for (let i = 0; i < currentFilteredFeatures.length; i++) {
+            let val = currentFilteredFeatures[i].properties[varName];
+            if (val !== null && val !== undefined && String(val).trim() !== '') {
+                hasData = true;
+                let testVal = String(val).trim().replace(/,/g, '.');
+                if (isNaN(Number(testVal))) {
+                    isNumeric = false;
+                    break;
+                }
+            }
+        }
+        
+        if (hasData) {
+            document.getElementById('sel-var-type').value = isNumeric ? 'continuous' : 'categorical';
+        }
+    }
+    applyViz(false);
+});
+
+// RESET MEMORI WARNA SAAT PENGATURAN BERUBAH AGAR MENGGENERATE ULANG DAFTAR
+document.getElementById('sel-var-type').addEventListener('change', () => { catColorMap = {}; applyViz(false); });
+document.getElementById('sel-cat-method').addEventListener('change', () => { catColorMap = {}; applyViz(false); });
+document.getElementById('slider-cat-classes').addEventListener('input', (e) => { document.getElementById('val-cat-classes').textContent = e.target.value; catColorMap = {}; applyViz(false); });
+
+// PENGATURAN LAINNYA HANYA MEMPERBARUI LEGENDA (FALSE)
 document.getElementById('sel-var2').addEventListener('change', () => applyViz(false));
 document.getElementById('sel-kab').addEventListener('change', (e) => { updateKecDropdown(e.target.value); applyViz(false); });
 document.getElementById('sel-kec').addEventListener('change', (e) => { updateDesaDropdown(e.target.value, document.getElementById('sel-kab').value); applyViz(false); });
 document.getElementById('sel-desa').addEventListener('change', () => applyViz(false));
-document.getElementById('sel-var-type').addEventListener('change', () => applyViz(false));
 document.getElementById('sel-var-count').addEventListener('change', () => { updateMethodVisibility(); applyViz(false); });
 document.querySelectorAll('.method-btn').forEach(b => { b.onclick = () => { document.querySelector('.method-btn.active').classList.remove('active'); b.classList.add('active'); selectedMethod = b.dataset.method; updateMethodVisibility(); applyViz(false); }; });
 document.getElementById('color-symbol-picker').addEventListener('input', () => applyViz(false));
-document.getElementById('slider-opacity').oninput = (e) => { currentOpacity = parseFloat(e.target.value); applyViz(true); };
-document.getElementById('slider-classes').oninput = (e) => { const val = e.target.value; document.getElementById('val-classes').textContent = val; currentClasses = parseInt(val); applyViz(true); };
-document.getElementById('btn-exit').addEventListener('click', () => { document.getElementById('info-panel').style.display = 'none'; document.getElementById('upload-screen').style.display = 'flex'; geojsonData = null; csvRows = null; allCols = []; catColorMap = {}; if (leafletLayer) { map.removeLayer(leafletLayer); leafletLayer = null; } document.getElementById('btn-launch').disabled = true; document.getElementById('btn-launch').style.opacity = '0.3'; document.getElementById('status-csv').textContent = 'Menunggu file...'; document.getElementById('status-csv').className = 'card-status'; document.getElementById('status-geo').textContent = 'Menunggu file...'; document.getElementById('status-geo').className = 'card-status'; document.getElementById('input-csv').value = ''; document.getElementById('input-geo').value = ''; document.getElementById('status-badge').textContent = '0 Desa'; document.getElementById('header-location').textContent = 'SULAWESI TENGGARA'; document.getElementById('legend-title').textContent = '-'; });
+document.getElementById('slider-opacity').oninput = (e) => { currentOpacity = parseFloat(e.target.value); }; 
+document.getElementById('slider-classes').oninput = (e) => { const val = e.target.value; document.getElementById('val-classes').textContent = val; currentClasses = parseInt(val); applyViz(false); };
+
+document.getElementById('btn-exit').addEventListener('click', () => { resetInfoPanel(); document.getElementById('upload-screen').style.display = 'flex'; geojsonData = null; csvRows = null; allCols = []; catColorMap = {}; if (leafletLayer) { map.removeLayer(leafletLayer); leafletLayer = null; } document.getElementById('btn-launch').disabled = true; document.getElementById('status-csv').textContent = 'Menunggu file...'; document.getElementById('status-csv').className = 'card-status'; document.getElementById('status-geo').textContent = 'Menunggu file...'; document.getElementById('status-geo').className = 'card-status'; document.getElementById('input-csv').value = ''; document.getElementById('input-geo').value = ''; document.getElementById('status-badge').textContent = '0 Desa'; document.getElementById('header-location').textContent = 'SULAWESI TENGGARA'; document.getElementById('legend-title').textContent = '-'; });
 </script>
 </body>
 </html>
