@@ -13,6 +13,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 /* ─── SISTEM TEMA & VARIABEL ─── */
 :root {
@@ -51,14 +52,14 @@
   --primary-hover: #60a5fa;
   --primary-faint: rgba(59, 130, 246, 0.15);
   
-  --bg-main: #0f172a;      /* Latar peta/luar sangat gelap */
-  --bg-sidebar: #1e293b;   /* Latar panel agak gelap */
-  --bg-surface: #334155;   /* Latar input/tombol */
+  --bg-main: #0f172a;      
+  --bg-sidebar: #1e293b;   
+  --bg-surface: #334155;   
   
-  --text-main: #f8fafc;    /* Teks utama hampir putih */
-  --text-muted: #94a3b8;   /* Teks petunjuk abu-abu */
+  --text-main: #f8fafc;    
+  --text-muted: #94a3b8;   
   
-  --border: #334155;       /* Garis pembatas gelap */
+  --border: #334155;       
   
   --danger: #f87171;       
   --danger-hover: rgba(239, 68, 68, 0.15); 
@@ -108,7 +109,6 @@ body {
 #btn-toggle-sidebar:hover { color: var(--text-main); background: var(--bg-surface); }
 
 #header h1 { color: var(--text-main); font-size: 16px; font-weight: 800; letter-spacing: 0.02em; display: flex; align-items: center; gap: 8px;}
-#header .subtitle { display: none; }
 
 .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 #header-location { font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em; }
@@ -122,9 +122,17 @@ body {
 .icon-btn {
   background: transparent; border: 1px solid var(--border); color: var(--text-muted);
   padding: 6px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
 }
-.icon-btn:hover { background: var(--bg-surface); color: var(--text-main); }
+.icon-btn:hover { background: var(--bg-surface); color: var(--text-main); border-color: var(--text-muted); }
+
+.header-text-btn {
+  background: var(--bg-surface); border: 1px solid var(--border); color: var(--primary);
+  padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; 
+  cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.header-text-btn:hover { background: var(--primary); color: #ffffff; border-color: var(--primary); }
 
 #btn-exit {
   background: var(--bg-sidebar); border: 1px solid var(--border); color: var(--text-muted);
@@ -150,8 +158,19 @@ body {
   font-size: 12px; font-weight: 800; letter-spacing: 0.05em;
   color: var(--text-main); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
 }
+.section-title::before { content: ''; display: block; width: 4px; height: 14px; background: var(--primary-faint); border: 1px solid var(--primary); border-radius: 2px; }
 
 label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px; font-weight: 600; }
+
+.search-container { position: relative; margin-bottom: 16px; }
+.search-container input { margin-bottom: 0; padding-right: 36px; }
+#btn-clear-search {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  background: transparent; border: none; color: var(--text-muted);
+  cursor: pointer; display: none; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 4px; transition: all 0.2s;
+}
+#btn-clear-search:hover { background: var(--bg-surface); color: var(--text-main); }
 
 select, input[type=range], input[type=text] {
   width: 100%; font-size: 13px; color: var(--text-main); background: var(--bg-sidebar);
@@ -197,7 +216,6 @@ input[type=range] { padding: 0; background: transparent; height: 24px; box-shado
 }
 .pal-btn:hover { transform: scale(1.05); }
 .pal-btn.selected { outline: 2px solid var(--primary); outline-offset: 2px; border-color: transparent;}
-.pal-btn span { display: none; }
 
 .custom-grad-row { display: flex; align-items: center; gap: 16px; margin-top: 12px; background: var(--bg-sidebar); padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border);}
 .custom-grad-col { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%;}
@@ -262,7 +280,7 @@ input[type=range] { padding: 0; background: transparent; height: 24px; box-shado
 #legend-title { font-size:13px; font-weight:700; margin-bottom:14px; color:var(--text-main); line-height: 1.4;}
 .legend-labels { display: flex; justify-content: space-between; font-size: 11px; color:var(--text-muted); }
 
-/* ─── UPLOAD SCREEN RESPONSIVE DENGAN CLAMP ─── */
+/* ─── UPLOAD SCREEN RESPONSIVE ─── */
 #upload-screen {
   position: fixed; inset: 0; background: var(--bg-main);
   display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
@@ -301,11 +319,16 @@ input[type=range] { padding: 0; background: transparent; height: 24px; box-shado
 .card-status.ok { color: var(--success); font-weight: 600; }
 
 #btn-launch {
-  margin-top: clamp(20px, 4vw, 40px); padding: 12px 36px; background: var(--primary); color: #ffffff; border: none;
+  padding: 12px 36px; background: var(--primary); color: #ffffff; border: none;
   border-radius: 8px; cursor: not-allowed; font-weight: 700; font-size: clamp(13px, 2vw, 15px); opacity: 0.5; transition: all 0.2s;
 }
 #btn-launch:not([disabled]) { opacity: 1; cursor: pointer; }
 #btn-launch:not([disabled]):hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+#btn-reset-files:hover {
+  background: var(--danger-hover) !important;
+  border-color: var(--danger) !important;
+}
 
 #loading {
   position: fixed; inset: 0; background: var(--glass-bg-solid);
@@ -314,18 +337,30 @@ input[type=range] { padding: 0; background: transparent; height: 24px; box-shado
 .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* MODAL TABEL DATA MINIMALIS */
-#table-modal {
+/* ─── KELAS GABUNGAN UNTUK MODAL TABEL & CROSSTAB ─── */
+#table-modal, #crosstab-modal {
   position: fixed; inset: 0; background: rgba(0,0,0, 0.6); backdrop-filter: blur(4px);
   z-index: 3000; display: none; align-items: center; justify-content: center; padding: 24px;
 }
-#table-container {
+#table-container, #crosstab-container {
   background: var(--bg-sidebar); width: 100%; max-width: 1200px; height: 85vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-lg);
 }
-#table-header { 
+#table-header, #crosstab-header { 
   padding: 16px 24px; background: var(--bg-sidebar); border-bottom: 1px solid var(--border); color: var(--text-main); display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 15px;
 }
-#table-body { flex: 1; overflow: auto; padding: 0; background: var(--bg-sidebar); }
+
+#table-body, #crosstab-body { flex: 1; overflow: auto; padding: 0; background: var(--bg-sidebar); position: relative; }
+
+/* Kontrol Khusus Crosstab */
+#crosstab-controls {
+  padding: 16px 24px; background: var(--bg-surface); border-bottom: 1px solid var(--border);
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
+}
+#crosstab-controls .ctrl-group {
+  display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 150px;
+}
+#crosstab-controls select { margin-bottom: 0; }
+
 table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
 th { 
   background: var(--bg-surface); color: var(--text-muted); position: sticky; top: 0; padding: 12px 16px; 
@@ -365,6 +400,11 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
 
 <!-- UPLOAD SCREEN -->
 <div id="upload-screen">
+  <button id="btn-theme-toggle-upload" class="icon-btn" title="Ganti Tema" style="position: absolute; top: 24px; right: 24px; padding: 8px; background: var(--bg-sidebar); box-shadow: var(--shadow-sm);">
+    <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    <svg class="theme-icon-sun" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+  </button>
+
   <div style="flex: 1; min-height: 20px;"></div>
   
   <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 0; width: 100%; max-width: 900px; margin: 0 auto;">
@@ -376,7 +416,6 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
     <p class="upload-desc">Visualisasi data yang berjalan 100% lokal di browser Anda. Tidak ada data yang diunggah ke internet. Mendukung format <b>.csv</b>, <b>.xlsx</b>, dan <b>.geojson</b>.</p>
     
     <div id="upload-cards-container">
-      <!-- CARD 1: CSV/EXCEL -->
       <div class="upload-card" id="card-csv">
         <div class="upload-card-title">1. Dataset Tabel (Wajib)</div>
         <div style="display: flex; align-items: center; margin-bottom: 8px;" onclick="document.getElementById('input-csv').click()">
@@ -387,7 +426,6 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
         <div id="status-csv" class="card-status">Format .csv / .xlsx<br>Pastikan ada kolom ID Desa.</div>
       </div>
 
-      <!-- CARD 2: GEOJSON -->
       <div class="upload-card" id="card-geo">
         <div class="upload-card-title">2. Dataset Peta (Wajib)</div>
         <div style="display: flex; align-items: center; margin-bottom: 8px;" onclick="document.getElementById('input-geo').click()">
@@ -398,7 +436,6 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
         <div id="status-geo" class="card-status">Format .geojson<br>ID harus sinkron dgn Tabel.</div>
       </div>
 
-      <!-- CARD 3: LABEL (OPSIONAL) -->
       <div class="upload-card" id="card-label">
         <div class="upload-card-title">3. Label (Opsional)</div>
         <div style="display: flex; align-items: center; margin-bottom: 8px;" onclick="document.getElementById('input-label').click()">
@@ -410,12 +447,16 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
       </div>
     </div>
     
-    <button id="btn-launch" disabled>Buka Ruang Kerja</button>
+    <div style="display: flex; gap: 16px; margin-top: clamp(20px, 4vw, 40px); justify-content: center; width: 100%;">
+        <button id="btn-launch" disabled>Buka Ruang Kerja</button>
+        <button id="btn-reset-files" style="display: none; padding: 12px 24px; background: transparent; border: 1px solid var(--danger); color: var(--danger); border-radius: 8px; cursor: pointer; font-weight: 700; font-size: clamp(13px, 2vw, 15px); transition: all 0.2s;">Hapus File</button>
+    </div>
+
   </div>
   
   <div style="flex: 1; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 30px; min-height: 60px; width: 100%;">
     <div style="color: var(--text-muted); font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-align: center;">
-      &copy; 2025 Tim Podes BPS Provinsi Sulawesi Tenggara
+      &copy; 2026 Tim Podes BPS Provinsi Sulawesi Tenggara
     </div>
   </div>
 </div>
@@ -432,14 +473,21 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
   </button>
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>
   <h1>Peta Potensi Desa</h1>
+  
+  <button id="btn-crosstab" class="header-text-btn" title="Buat Tabulasi Silang" style="margin-left: 20px;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+    Crosstab
+  </button>
+
   <div class="header-right">
     <div id="header-location">SULAWESI TENGGARA</div>
     <div id="status-badge">0 Wilayah</div>
-    <!-- TOMBOL TEMA BARU -->
+    
     <button id="btn-theme-toggle" class="icon-btn" title="Ganti Tema">
-      <svg id="theme-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-      <svg id="theme-icon-sun" style="display:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="theme-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <svg class="theme-icon-sun" style="display:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
     </button>
+
     <button id="btn-exit" title="Kembali ke Halaman Awal">Tutup</button>
   </div>
 </div>
@@ -449,7 +497,12 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
   <div id="sidebar">
     <div class="section">
       <div class="section-title">Pencarian & Filter</div>
-      <input type="text" id="input-search" placeholder="Cari Nama Desa / Kecamatan..." autocomplete="off">
+      <div class="search-container">
+        <input type="text" id="input-search" placeholder="Cari Nama / ID Wilayah..." autocomplete="off">
+        <button id="btn-clear-search" title="Hapus Pencarian">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
       <label>Kabupaten/Kota</label>
       <select id="sel-kab"><option value="ALL">Semua Kabupaten</option></select>
       <label>Kecamatan</label>
@@ -579,7 +632,6 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
   <div id="map-container">
     <div id="map"></div>
     
-    <!-- INFO PANEL PINTAR (GABUNGAN) -->
     <div id="info-panel" class="glass-panel">
       <button id="info-panel-close" title="Tutup" style="display: none;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -603,6 +655,89 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
         <thead id="table-head-content"></thead>
         <tbody id="table-body-content"></tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TABULASI SILANG & GRAFIK (CROSSTAB) -->
+<div id="crosstab-modal">
+  <div id="crosstab-container">
+    <div id="crosstab-header">
+      <div style="display:flex; align-items:center; gap:8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+          <span>Pembuat Tabulasi Silang & Grafik</span>
+      </div>
+      <button id="btn-close-crosstab" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:20px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; transition: color 0.2s; border-radius: 8px;">✕</button>
+    </div>
+    
+    <div id="crosstab-controls">
+      <div class="ctrl-group">
+        <label>Variabel Baris (Wajib)</label>
+        <select id="xtab-row"></select>
+      </div>
+      <div class="ctrl-group">
+        <label>Variabel Kolom (Wajib)</label>
+        <select id="xtab-col"></select>
+      </div>
+      <div class="ctrl-group">
+        <label>Variabel Nilai (Opsional)</label>
+        <select id="xtab-val"></select>
+      </div>
+      <div class="ctrl-group">
+        <label>Fungsi Kalkulasi</label>
+        <select id="xtab-agg">
+          <option value="count">Hitung Wilayah (Count)</option>
+          <option value="sum">Jumlah Nilai (Sum)</option>
+          <option value="avg">Rata-rata Nilai (Average)</option>
+        </select>
+      </div>
+      
+      <div class="ctrl-group" style="border-left: 1px solid var(--border); padding-left: 16px; margin-left: 4px;">
+        <label>Pilih Tampilan</label>
+        <select id="xtab-view-mode">
+          <option value="table">Tabel Data</option>
+          <option value="chart">Grafik / Chart</option>
+        </select>
+      </div>
+      
+      <div class="ctrl-group chart-ctrl" style="display:none;">
+        <label>Jenis Grafik</label>
+        <select id="xtab-chart-type">
+          <option value="bar">Bar (Vertikal)</option>
+          <option value="horizontalBar">Bar (Horizontal)</option>
+          <option value="stacked">Bar (Bertumpuk)</option>
+          <option value="line">Garis (Line)</option>
+        </select>
+      </div>
+      
+      <div style="display:flex; gap:8px; margin-top:12px; margin-left:auto;">
+          <button id="btn-generate-xtab" class="btn-apply" style="width:auto; padding: 10px 20px;">Proses Data</button>
+          
+          <button id="btn-export-xtab" class="btn-action table-ctrl" style="width:auto; padding: 10px 16px; margin:0;" title="Unduh Excel">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </button>
+          
+          <button id="btn-export-xtab-chart" class="btn-action chart-ctrl" style="width:auto; padding: 10px 16px; margin:0; display:none;" title="Unduh Gambar Grafik">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          </button>
+      </div>
+    </div>
+
+    <div id="crosstab-body" style="position: relative;">
+      <div id="xtab-table-wrapper" style="width: 100%; height: 100%; overflow: auto;">
+        <table id="xtab-table-element">
+          <thead id="xtab-head-content"></thead>
+          <tbody id="xtab-body-content">
+             <tr><td colspan="100%" style="text-align:center; padding:40px; color:var(--text-muted); font-style:italic;">Silakan pilih variabel dan klik "Proses Data"</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="xtab-chart-wrapper" style="display: none; position: absolute; inset: 0; padding: 24px; background: var(--bg-sidebar); flex-direction: column;">
+        <div style="flex: 1; min-height: 0; position: relative;">
+            <canvas id="xtabChart"></canvas>
+        </div>
+        <div id="xtab-chart-legend" style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; overflow-y: auto; max-height: 100px; padding: 8px; border-top: 1px solid var(--border);"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -652,36 +787,30 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
 
 <script>
 // ─── LOGIKA TEMA (DARK/LIGHT MODE) ───
-document.getElementById('btn-theme-toggle').addEventListener('click', () => {
+function toggleTheme() {
     const root = document.documentElement;
     const currentTheme = root.getAttribute('data-theme');
-    const moonIcon = document.getElementById('theme-icon-moon');
-    const sunIcon = document.getElementById('theme-icon-sun');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     
-    if (currentTheme === 'dark') {
-        root.setAttribute('data-theme', 'light');
-        moonIcon.style.display = 'block';
-        sunIcon.style.display = 'none';
-        
-        // Opsional: ganti basemap dropdown ke light
-        const baseSel = document.getElementById('sel-basemap');
-        if(baseSel.value === 'dark') {
+    root.setAttribute('data-theme', newTheme);
+    
+    document.querySelectorAll('.theme-icon-moon').forEach(el => el.style.display = newTheme === 'dark' ? 'none' : 'block');
+    document.querySelectorAll('.theme-icon-sun').forEach(el => el.style.display = newTheme === 'dark' ? 'block' : 'none');
+    
+    const baseSel = document.getElementById('sel-basemap');
+    if (baseSel) {
+        if (newTheme === 'dark' && baseSel.value === 'light') {
+            baseSel.value = 'dark';
+            baseSel.dispatchEvent(new Event('change'));
+        } else if (newTheme === 'light' && baseSel.value === 'dark') {
             baseSel.value = 'light';
             baseSel.dispatchEvent(new Event('change'));
         }
-    } else {
-        root.setAttribute('data-theme', 'dark');
-        moonIcon.style.display = 'none';
-        sunIcon.style.display = 'block';
-        
-        // Opsional: ganti basemap dropdown ke dark
-        const baseSel = document.getElementById('sel-basemap');
-        if(baseSel.value === 'light') {
-            baseSel.value = 'dark';
-            baseSel.dispatchEvent(new Event('change'));
-        }
     }
-});
+}
+
+document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme);
+document.getElementById('btn-theme-toggle-upload').addEventListener('click', toggleTheme);
 
 // KONFIGURASI PALET
 const PALETTES = [
@@ -705,7 +834,6 @@ var colKab = null, colKec = null, colDesa = null;
 var currentSortCol = 'ID DESA';
 var currentSortAsc = true;
 
-// VARIABEL BARU: Menyimpan pemetaan nama label
 var labelMap = {};
 
 // INIT MAP
@@ -742,14 +870,31 @@ document.getElementById('info-panel-close').addEventListener('click', () => {
     resetHighlight(); 
 });
 
+// FUNGSI PEMBERSIH ANGKA KHAS INDONESIA & DATA KOSONG BPS
 function getSafeNum(val) {
     if (typeof val === 'number') return val;
-    if (val === null || val === undefined || val === '') return null;
-    const parsed = parseFloat(val);
-    return isNaN(parsed) ? null : parsed;
+    if (val === null || val === undefined) return null;
+    let str = String(val).trim();
+    
+    // BPS sering menggunakan tanda strip (-) atau NA untuk data kosong
+    if (str === '' || str === '-' || str.toLowerCase() === 'na' || str.toLowerCase() === 'n/a') return null;
+    
+    // Pengecekan ketat dari awal (^) hingga akhir ($) agar TIDAK ADA huruf atau karakter asing yang lolos.
+    const isGlobalNum = /^-?\d+(\.\d+)?$/.test(str);
+    const isIndoFormattedNum = /^-?\d{1,3}(\.\d{3})*(,\d+)?$/.test(str);
+    const isIndoSimpleNum = /^-?\d+,\d+$/.test(str);
+
+    if (isGlobalNum) {
+        return parseFloat(str);
+    } else if (isIndoFormattedNum || isIndoSimpleNum) {
+        let cleanStr = str.replace(/\./g, '').replace(/,/g, '.');
+        return parseFloat(cleanStr);
+    }
+    
+    return null;
 }
 
-// ── FILE HANDLER DENGAN PAPAPARSE UNTUK CSV ──
+// ── FILE HANDLER ──
 document.getElementById('input-csv').onchange = (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -758,6 +903,10 @@ document.getElementById('input-csv').onchange = (e) => {
   const reader = new FileReader();
   
   document.getElementById('text-csv').textContent = file.name;
+  
+  const statusEl = document.getElementById('status-csv');
+  statusEl.innerHTML = '⏳ <i>Memproses data tabel...</i>';
+  statusEl.className = 'card-status';
 
   if (fileName.endsWith('.csv')) {
       Papa.parse(file, {
@@ -776,45 +925,54 @@ document.getElementById('input-csv').onchange = (e) => {
               } else {
                   csvRows = []; allCols = [];
               }
-              document.getElementById('status-csv').textContent = '✅ Berhasil memuat baris data';
-              document.getElementById('status-csv').className = 'card-status ok';
+              statusEl.textContent = `✅ Selesai! ${csvRows.length.toLocaleString('id-ID')} baris data dimuat`;
+              statusEl.className = 'card-status ok';
               checkReady();
           },
           error: function() {
+              statusEl.textContent = '❌ Gagal memproses CSV';
               alert("Gagal membaca CSV. Pastikan format file tidak rusak.");
           }
       });
       
   } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
       reader.onload = (f) => {
-        const data = new Uint8Array(f.target.result);
-        const workbook = XLSX.read(data, {type: 'array'});
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        
-        const json = XLSX.utils.sheet_to_json(worksheet, {raw: false, defval: ""});
+        setTimeout(() => {
+            try {
+                const data = new Uint8Array(f.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                const json = XLSX.utils.sheet_to_json(worksheet, {raw: false, defval: ""});
 
-        if (json.length > 0) {
-            allCols = Object.keys(json[0]).map(k => k.trim());
-            csvRows = json.map(row => {
-                let newRow = {};
-                for(let key in row) {
-                    newRow[key.trim()] = String(row[key]).trim();
+                if (json.length > 0) {
+                    allCols = Object.keys(json[0]).map(k => k.trim());
+                    csvRows = json.map(row => {
+                        let newRow = {};
+                        for(let key in row) {
+                            newRow[key.trim()] = String(row[key]).trim();
+                        }
+                        return newRow;
+                    });
+                } else {
+                    csvRows = [];
+                    allCols = [];
                 }
-                return newRow;
-            });
-        } else {
-            csvRows = [];
-            allCols = [];
-        }
-        
-        document.getElementById('status-csv').textContent = '✅ Berhasil memuat baris data';
-        document.getElementById('status-csv').className = 'card-status ok';
-        checkReady();
+                
+                statusEl.textContent = `✅ Selesai! ${csvRows.length.toLocaleString('id-ID')} baris data dimuat`;
+                statusEl.className = 'card-status ok';
+                checkReady();
+            } catch(err) {
+                statusEl.textContent = '❌ Gagal memproses Excel';
+                alert("Format file Excel rusak atau tidak terbaca.");
+            }
+        }, 50);
       };
       reader.readAsArrayBuffer(file);
       
   } else {
+      statusEl.textContent = '❌ Format tidak didukung';
       alert("Format file tidak didukung! Harap unggah file .csv, .xlsx, atau .xls.");
   }
 };
@@ -823,23 +981,39 @@ document.getElementById('input-geo').onchange = (e) => {
   const file = e.target.files[0];
   if (!file) return;
   document.getElementById('text-geo').textContent = file.name;
+  
+  const statusEl = document.getElementById('status-geo');
+  statusEl.innerHTML = '⏳ <i>Membaca geometri peta...</i>';
+  statusEl.className = 'card-status';
 
   const reader = new FileReader();
   reader.onload = (f) => {
-    geojsonData = JSON.parse(f.target.result);
-    document.getElementById('status-geo').textContent = '✅ Berhasil memuat poligon peta';
-    document.getElementById('status-geo').className = 'card-status ok';
-    checkReady();
+    setTimeout(() => {
+        try {
+            geojsonData = JSON.parse(f.target.result);
+            const count = geojsonData.features ? geojsonData.features.length : 0;
+            statusEl.textContent = `✅ Selesai! ${count.toLocaleString('id-ID')} poligon dimuat`;
+            statusEl.className = 'card-status ok';
+            checkReady();
+        } catch(err) {
+            statusEl.textContent = '❌ Gagal memproses GeoJSON';
+            alert("File GeoJSON tidak valid.");
+        }
+    }, 50);
   };
   reader.readAsText(file);
 };
 
-// HANDLER UNTUK FILE LABEL (OPSIONAL)
 document.getElementById('input-label').onchange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const fileName = file.name.toLowerCase();
     document.getElementById('text-label').textContent = file.name;
+    
+    const statusEl = document.getElementById('status-label');
+    statusEl.innerHTML = '⏳ <i>Memproses label...</i>';
+    statusEl.className = 'card-status';
+
     const reader = new FileReader();
 
     const processLabelData = (json) => {
@@ -854,33 +1028,46 @@ document.getElementById('input-label').onchange = (e) => {
                 });
             }
         }
-        document.getElementById('status-label').textContent = '✅ Label referensi dimuat';
-        document.getElementById('status-label').className = 'card-status ok';
+        statusEl.textContent = `✅ Selesai! ${Object.keys(labelMap).length.toLocaleString('id-ID')} label dimuat`;
+        statusEl.className = 'card-status ok';
+        checkReady();
     };
 
     if (fileName.endsWith('.csv')) {
         Papa.parse(file, {
             header: true, skipEmptyLines: true,
             complete: function(results) { processLabelData(results.data); },
-            error: function() { alert("Gagal membaca CSV Label."); }
+            error: function() { 
+                statusEl.textContent = '❌ Gagal membaca CSV Label';
+                alert("Gagal membaca CSV Label."); 
+            }
         });
     } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
         reader.onload = (f) => {
-            const data = new Uint8Array(f.target.result);
-            const workbook = XLSX.read(data, {type: 'array'});
-            const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, defval: ""});
-            processLabelData(json);
+            setTimeout(() => {
+                try {
+                    const data = new Uint8Array(f.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, defval: ""});
+                    processLabelData(json);
+                } catch (err) {
+                    statusEl.textContent = '❌ Gagal memproses Excel Label';
+                }
+            }, 50);
         };
         reader.readAsArrayBuffer(file);
     } else {
+        statusEl.textContent = '❌ Format tidak didukung';
         alert("Format file label tidak didukung! Harap unggah .csv, .xlsx, atau .xls.");
     }
 };
 
 function checkReady() {
+  if (csvRows || geojsonData || Object.keys(labelMap).length > 0) {
+      document.getElementById('btn-reset-files').style.display = 'block';
+  }
   if (csvRows && geojsonData) {
-    const btn = document.getElementById('btn-launch');
-    btn.disabled = false;
+      document.getElementById('btn-launch').disabled = false;
   }
 }
 
@@ -893,6 +1080,82 @@ document.getElementById('btn-launch').onclick = () => {
   }
   setTimeout(initApp, 600);
 };
+
+// Reset Keseluruhan (Tombol Merah di Layar Upload)
+document.getElementById('btn-reset-files').addEventListener('click', () => {
+    geojsonData = null; csvRows = null; allCols = []; catColorMap = {}; labelMap = {}; 
+    if (leafletLayer) { map.removeLayer(leafletLayer); leafletLayer = null; } 
+    
+    document.getElementById('btn-launch').disabled = true; 
+    document.getElementById('btn-reset-files').style.display = 'none';
+    
+    document.getElementById('status-csv').innerHTML = 'Format .csv / .xlsx<br>Pastikan ada kolom ID Desa.'; 
+    document.getElementById('status-csv').className = 'card-status'; 
+    document.getElementById('status-geo').innerHTML = 'Format .geojson<br>ID harus sinkron dgn Tabel.'; 
+    document.getElementById('status-geo').className = 'card-status'; 
+    document.getElementById('status-label').innerHTML = 'Format .csv / .xlsx<br>Kolom 1: Kode, 2: Nama<br>Boleh dikosongkan.'; 
+    document.getElementById('status-label').className = 'card-status'; 
+    
+    document.getElementById('input-csv').value = ''; document.getElementById('text-csv').textContent = 'No file chosen'; 
+    document.getElementById('input-geo').value = ''; document.getElementById('text-geo').textContent = 'No file chosen'; 
+    document.getElementById('input-label').value = ''; document.getElementById('text-label').textContent = 'No file chosen'; 
+    
+    document.getElementById('status-badge').textContent = '0 Wilayah'; 
+    document.getElementById('header-location').textContent = 'SULAWESI TENGGARA'; 
+    document.getElementById('legend-title').textContent = '-'; 
+    document.getElementById('legend-uni').style.display = 'none';
+    document.getElementById('legend-cat').style.display = 'none';
+    document.getElementById('legend-cat-help').style.display = 'none';
+    document.getElementById('legend-bivariate').style.display = 'none';
+    document.getElementById('legend-symbol').style.display = 'none';
+    
+    document.getElementById('input-search').value = ''; 
+    document.getElementById('sel-kab').innerHTML = '<option value="ALL">Semua Kabupaten</option>'; 
+    document.getElementById('sel-kec').innerHTML = '<option value="ALL">Semua Kecamatan</option>'; 
+    document.getElementById('sel-desa').innerHTML = '<option value="ALL">Semua Desa</option>'; 
+    
+    document.getElementById('sel-var-count').value = '1'; 
+    updateMethodVisibility(); 
+    
+    document.getElementById('sel-var-type').value = 'continuous'; 
+    document.getElementById('sel-var1').innerHTML = '<option value="">-- Pilih Variabel --</option>'; 
+    document.getElementById('sel-var2').innerHTML = '<option value="">-- Pilih Variabel --</option>'; 
+    
+    document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active')); 
+    document.querySelector('[data-method="choropleth"]').classList.add('active'); 
+    selectedMethod = 'choropleth'; 
+    
+    resetHighlight();
+    
+    document.getElementById('slider-classes').value = 5; document.getElementById('val-classes').textContent = 5; currentClasses = 5; 
+    document.getElementById('slider-cat-classes').value = 5; document.getElementById('val-cat-classes').textContent = 5;
+    document.getElementById('sel-cat-method').value = 'k';
+    
+    document.getElementById('slider-opacity').value = 0.8; currentOpacity = 0.8; 
+    
+    selectedPalette = PALETTES[0]; 
+    document.querySelectorAll('.pal-btn').forEach((x, i) => { if(i===0) x.classList.add('selected'); else x.classList.remove('selected'); }); 
+    
+    document.getElementById('color-grad-start').value = '#eff6ff'; 
+    document.getElementById('color-grad-end').value = '#1d4ed8'; 
+    document.getElementById('color-symbol-picker').value = '#f59e0b';
+    
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const baseSel = document.getElementById('sel-basemap');
+    baseSel.value = currentTheme === 'dark' ? 'dark' : 'light';
+    baseSel.dispatchEvent(new Event('change'));
+    
+    catColorMap = {};
+    document.getElementById('categorical-color-box').style.display = 'none';
+    document.getElementById('numeric-cat-settings').style.display = 'none';
+    document.getElementById('btn-clear-search').style.display = 'none'; 
+});
+
+// Tutup Halaman Kerja (Sembunyikan Peta, tidak mereset memori)
+document.getElementById('btn-exit').addEventListener('click', () => { 
+    resetInfoPanel(); 
+    document.getElementById('upload-screen').style.display = 'flex'; 
+});
 
 document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
     const sidebar = document.getElementById('sidebar');
@@ -1121,16 +1384,18 @@ function applyViz(renderToMap = true) {
       const k = colKab ? f.properties[colKab] : (f.properties.KAB || f.properties.NMKAB || f.properties.kab);
       const c = colKec ? f.properties[colKec] : (f.properties.KEC || f.properties.NMKEC || f.properties.kec);
       const d = colDesa ? f.properties[colDesa] : (f.properties.DESA || f.properties.NMDESA || f.properties.desa);
+      const idVal = f.properties.IDDESA || f.properties.iddesa || f.properties.kode || f.properties.KODE || f.properties.KODE_DESA || f.properties.kode_desa || f.properties.id || f.properties.ID || '';
       
       const safeKab = String(k || '').trim().toUpperCase();
       const safeKec = String(c || '').trim().toUpperCase();
       const safeDesa = String(d || '').trim().toUpperCase();
+      const safeId = String(idVal || '').trim().toLowerCase();
       
       const matchKab = kab === 'ALL' || safeKab === targetKab;
       const matchKec = kec === 'ALL' || safeKec === targetKec;
       const matchDesa = desa === 'ALL' || safeDesa === targetDesa;
       
-      const matchSearch = searchQ === '' || safeDesa.toLowerCase().includes(searchQ) || safeKec.toLowerCase().includes(searchQ);
+      const matchSearch = searchQ === '' || safeDesa.toLowerCase().includes(searchQ) || safeKec.toLowerCase().includes(searchQ) || safeId.includes(searchQ);
       
       return matchKab && matchKec && matchDesa && matchSearch;
   });
@@ -1153,14 +1418,16 @@ function applyViz(renderToMap = true) {
   let hasEmpty = false;
   let cleanVals = [];
   rawVals.forEach(v => {
-      if (v === null || v === undefined || String(v).trim() === '') {
+      let strV = String(v === null || v === undefined ? '' : v).trim();
+      if (strV === '' || strV === '-' || strV.toLowerCase() === 'na' || strV.toLowerCase() === 'n/a') {
           hasEmpty = true;
       } else {
-          cleanVals.push(String(v).trim());
+          cleanVals.push(strV);
       }
   });
   let uniqueClean = [...new Set(cleanVals)];
-  let isAllNumeric = uniqueClean.length > 0 && uniqueClean.every(v => !isNaN(Number(v.replace(/,/g, '.'))));
+  
+  let isAllNumeric = uniqueClean.length > 0 && uniqueClean.every(v => getSafeNum(v) !== null);
 
   const numCatSettings = document.getElementById('numeric-cat-settings');
   if (varType === 'categorical' && isAllNumeric) {
@@ -1289,7 +1556,7 @@ function applyViz(renderToMap = true) {
     let rangeMap = [];
     
     if (isAllNumeric) {
-        let numericVals = uniqueClean.map(v => Number(v.replace(/,/g, '.')));
+        let numericVals = uniqueClean.map(v => getSafeNum(v)); 
         let catClasses = parseInt(document.getElementById('slider-cat-classes').value);
         let catMethod = document.getElementById('sel-cat-method').value;
         
@@ -1334,7 +1601,7 @@ function applyViz(renderToMap = true) {
     uniqueVals.forEach((v, idx) => { 
         if (!catColorMap[v]) {
             if (v === 'Kosong') {
-                catColorMap[v] = '#cbd5e1'; // Abu-abu netral
+                catColorMap[v] = '#cbd5e1'; 
             } else if (isAllNumeric && gradColors.length > 0) {
                 catColorMap[v] = gradColors[idx];
             } else {
@@ -1345,10 +1612,13 @@ function applyViz(renderToMap = true) {
     });
     
     colorFn = (v) => {
-        if (v === null || v === undefined || String(v).trim() === '') return catColorMap['Kosong'] || '#cbd5e1';
+        let strV = String(v === null || v === undefined ? '' : v).trim();
+        if (strV === '' || strV === '-' || strV.toLowerCase() === 'na' || strV.toLowerCase() === 'n/a') return catColorMap['Kosong'] || '#cbd5e1';
         
         if (isAllNumeric) {
-            let numV = Number(String(v).replace(/,/g, '.'));
+            let numV = getSafeNum(v);
+            if (numV === null) return catColorMap['Kosong'] || '#cbd5e1';
+            
             let foundRange = rangeMap.find(r => r.isExact ? numV === r.min : (numV >= r.min && numV <= r.max));
             if(!foundRange && rangeMap.length > 0) {
                 if (numV < rangeMap[0].min) foundRange = rangeMap[0];
@@ -1356,7 +1626,7 @@ function applyViz(renderToMap = true) {
             }
             return foundRange ? (catColorMap[foundRange.label] || '#cbd5e1') : '#cbd5e1';
         } else {
-            return catColorMap[String(v).trim()] || '#cbd5e1';
+            return catColorMap[strV] || '#cbd5e1';
         }
     };
 
@@ -1556,6 +1826,8 @@ function applyViz(renderToMap = true) {
   document.getElementById('header-location').textContent = locText;
 }
 
+// ─── RE-ADDING THE MISSING EVENT LISTENERS FOR THE SIDEBAR BUTTONS ───
+
 const handleCustomGrad = () => { 
     const cStart = document.getElementById('color-grad-start').value;
     const cEnd = document.getElementById('color-grad-end').value; 
@@ -1575,13 +1847,33 @@ document.getElementById('btn-apply').onclick = () => {
 };
 
 document.getElementById('btn-reset').addEventListener('click', () => {
-    resetInfoPanel(); document.getElementById('input-search').value = ''; document.getElementById('sel-kab').value = 'ALL'; updateKecDropdown('ALL'); document.getElementById('sel-desa').value = 'ALL'; document.getElementById('sel-var-count').value = '1'; updateMethodVisibility(); document.getElementById('sel-var-type').value = 'continuous'; const sel1 = document.getElementById('sel-var1'), sel2 = document.getElementById('sel-var2'); if (sel1.options.length > 0) sel1.value = ''; if (sel2.options.length > 0) sel2.value = ''; document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active')); document.querySelector('[data-method="choropleth"]').classList.add('active'); selectedMethod = 'choropleth'; 
+    resetInfoPanel(); 
+    document.getElementById('input-search').value = ''; 
+    document.getElementById('sel-kab').value = 'ALL'; 
+    updateKecDropdown('ALL'); 
+    document.getElementById('sel-desa').value = 'ALL'; 
+    document.getElementById('sel-var-count').value = '1'; 
+    updateMethodVisibility(); 
+    document.getElementById('sel-var-type').value = 'continuous'; 
+    const sel1 = document.getElementById('sel-var1'), sel2 = document.getElementById('sel-var2'); 
+    if (sel1.options.length > 0) sel1.value = ''; 
+    if (sel2.options.length > 0) sel2.value = ''; 
+    document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active')); 
+    document.querySelector('[data-method="choropleth"]').classList.add('active'); 
+    selectedMethod = 'choropleth'; 
     resetHighlight();
-    document.getElementById('slider-classes').value = 5; document.getElementById('val-classes').textContent = 5; currentClasses = 5; 
-    document.getElementById('slider-opacity').value = 0.8; currentOpacity = 0.8; selectedPalette = PALETTES[0]; document.querySelectorAll('.pal-btn').forEach((x, i) => { if(i===0) x.classList.add('selected'); else x.classList.remove('selected'); }); 
-    document.getElementById('color-grad-start').value = '#eff6ff'; document.getElementById('color-grad-end').value = '#1d4ed8'; document.getElementById('color-symbol-picker').value = '#f59e0b';
     
-    // Sesuaikan kembali map ke tema yang aktif
+    document.getElementById('slider-classes').value = 5; document.getElementById('val-classes').textContent = 5; currentClasses = 5; 
+    document.getElementById('slider-cat-classes').value = 5; document.getElementById('val-cat-classes').textContent = 5;
+    document.getElementById('sel-cat-method').value = 'k';
+    
+    document.getElementById('slider-opacity').value = 0.8; currentOpacity = 0.8; 
+    selectedPalette = PALETTES[0]; 
+    document.querySelectorAll('.pal-btn').forEach((x, i) => { if(i===0) x.classList.add('selected'); else x.classList.remove('selected'); }); 
+    document.getElementById('color-grad-start').value = '#eff6ff'; 
+    document.getElementById('color-grad-end').value = '#1d4ed8'; 
+    document.getElementById('color-symbol-picker').value = '#f59e0b';
+    
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const baseSel = document.getElementById('sel-basemap');
     baseSel.value = currentTheme === 'dark' ? 'dark' : 'light';
@@ -1589,12 +1881,21 @@ document.getElementById('btn-reset').addEventListener('click', () => {
     
     catColorMap = {};
     document.getElementById('categorical-color-box').style.display = 'none';
+    document.getElementById('numeric-cat-settings').style.display = 'none';
+    document.getElementById('btn-clear-search').style.display = 'none'; 
     
     applyViz(true);
     if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.add('hidden');
 });
 
-document.getElementById('input-search').addEventListener('keydown', (e) => {
+const inputSearch = document.getElementById('input-search');
+const btnClearSearch = document.getElementById('btn-clear-search');
+
+inputSearch.addEventListener('input', (e) => {
+    btnClearSearch.style.display = e.target.value.length > 0 ? 'flex' : 'none';
+});
+
+inputSearch.addEventListener('keydown', (e) => {
     if(e.key === 'Enter') {
         resetInfoPanel(); 
         resetHighlight();
@@ -1602,6 +1903,15 @@ document.getElementById('input-search').addEventListener('keydown', (e) => {
     }
 });
 
+btnClearSearch.addEventListener('click', () => {
+    inputSearch.value = '';
+    btnClearSearch.style.display = 'none';
+    resetInfoPanel();
+    resetHighlight();
+    applyViz(true);
+});
+
+// ─── TABEL DATA LOGIC ───
 function renderTable() {
     const thead = document.getElementById('table-head-content');
     const tbody = document.getElementById('table-body-content');
@@ -1687,6 +1997,7 @@ document.getElementById('btn-close-table').addEventListener('click', () => {
     document.getElementById('table-modal').style.display = 'none';
 });
 
+// ─── UNDUH PETA ───
 document.getElementById('btn-export').addEventListener('click', () => {
     const btn = document.getElementById('btn-export');
     const originalText = btn.innerHTML;
@@ -1706,8 +2017,356 @@ document.getElementById('btn-export').addEventListener('click', () => {
         })
         .catch(function (error) {
             console.error('Oops, tidak bisa mengunduh gambar!', error);
-            alert('Gagal mengunduh peta. Pastikan mode Basemap sesuai.');
+            alert('Gagal mengunduh peta. Pastikan mode Basemap sesuai (Bukan Google Maps) untuk fungsi unduh.');
             btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+});
+
+// ─── CROSSTAB & CHART LOGIC ───
+let lastXtabData = null;
+let xtabChartInstance = null;
+let xtabChartColors = {};
+
+function populateXtabDropdowns() {
+    const selRow = document.getElementById('xtab-row');
+    const selCol = document.getElementById('xtab-col');
+    const selVal = document.getElementById('xtab-val');
+
+    selRow.innerHTML = '<option value="">-- Pilih Baris --</option>';
+    selCol.innerHTML = '<option value="">-- Pilih Kolom --</option>';
+    selVal.innerHTML = '<option value="">-- Kosongkan Jika Hanya Hitung Wilayah --</option>';
+
+    allCols.forEach(c => {
+        const labelText = labelMap[c] ? `${c} - ${labelMap[c]}` : c;
+        selRow.add(new Option(labelText, c));
+        selCol.add(new Option(labelText, c));
+        selVal.add(new Option(labelText, c));
+    });
+}
+
+document.getElementById('btn-crosstab').addEventListener('click', () => {
+    if(!csvRows || csvRows.length === 0) {
+        alert("Silakan unggah dan proses data tabel Anda terlebih dahulu!");
+        return;
+    }
+    populateXtabDropdowns();
+    document.getElementById('crosstab-modal').style.display = 'flex';
+});
+
+document.getElementById('btn-close-crosstab').addEventListener('click', () => {
+    document.getElementById('crosstab-modal').style.display = 'none';
+});
+
+document.getElementById('xtab-view-mode').addEventListener('change', (e) => {
+    const isChart = e.target.value === 'chart';
+    document.querySelectorAll('.chart-ctrl').forEach(el => el.style.display = isChart ? 'flex' : 'none');
+    document.querySelectorAll('.table-ctrl').forEach(el => el.style.display = isChart ? 'none' : 'flex');
+    
+    document.getElementById('xtab-table-wrapper').style.display = isChart ? 'none' : 'block';
+    document.getElementById('xtab-chart-wrapper').style.display = isChart ? 'flex' : 'none';
+    
+    if (isChart && lastXtabData) renderXtabChart();
+});
+
+document.getElementById('xtab-chart-type').addEventListener('change', renderXtabChart);
+
+document.getElementById('btn-generate-xtab').addEventListener('click', () => {
+    const rowVar = document.getElementById('xtab-row').value;
+    const colVar = document.getElementById('xtab-col').value;
+    const valVar = document.getElementById('xtab-val').value;
+    const aggFunc = document.getElementById('xtab-agg').value;
+
+    if (!rowVar || !colVar) {
+        alert("Silakan pilih variabel untuk Baris dan Kolom terlebih dahulu!");
+        return;
+    }
+
+    xtabChartColors = {}; 
+    let matrix = {};
+    let rowKeys = new Set();
+    let colKeys = new Set();
+
+    csvRows.forEach(row => {
+        let rVal = String(row[rowVar] || 'Kosong').trim();
+        let cVal = String(row[colVar] || 'Kosong').trim();
+
+        rowKeys.add(rVal);
+        colKeys.add(cVal);
+
+        if (!matrix[rVal]) matrix[rVal] = {};
+        if (!matrix[rVal][cVal]) matrix[rVal][cVal] = { count: 0, sum: 0 };
+
+        let vNum = 0;
+        if (valVar) {
+            let parsed = getSafeNum(row[valVar]);
+            if (parsed !== null) vNum = parsed;
+        }
+
+        matrix[rVal][cVal].count += 1;
+        matrix[rVal][cVal].sum += vNum;
+    });
+
+    let sortedRows = Array.from(rowKeys).sort((a,b) => {
+        let numA = getSafeNum(a);
+        let numB = getSafeNum(b);
+        if(numA !== null && numB !== null) return numA - numB;
+        return a.localeCompare(b);
+    });
+    
+    let sortedCols = Array.from(colKeys).sort((a,b) => {
+        let numA = getSafeNum(a);
+        let numB = getSafeNum(b);
+        if(numA !== null && numB !== null) return numA - numB;
+        return a.localeCompare(b);
+    });
+
+    lastXtabData = { matrix, sortedRows, sortedCols, aggFunc, rowVar, colVar };
+
+    const rowNameDisplay = labelMap[rowVar] ? `${rowVar} - ${labelMap[rowVar]}` : rowVar;
+    const colNameDisplay = labelMap[colVar] ? `${colVar} - ${labelMap[colVar]}` : colVar;
+    let thead = `<tr><th>${rowNameDisplay} \\ ${colNameDisplay}</th>`;
+    sortedCols.forEach(c => { thead += `<th>${c}</th>`; });
+    thead += '<th>Total Baris</th></tr>';
+
+    let tbody = '';
+    let colTotals = {};
+    sortedCols.forEach(c => colTotals[c] = {count: 0, sum: 0});
+    let grandTotal = {count: 0, sum: 0};
+
+    sortedRows.forEach(r => {
+        tbody += `<tr><td><b>${r}</b></td>`;
+        let rowTotal = {count: 0, sum: 0};
+
+        sortedCols.forEach(c => {
+            let cell = matrix[r][c] || {count: 0, sum: 0};
+            rowTotal.count += cell.count;
+            rowTotal.sum += cell.sum;
+            colTotals[c].count += cell.count;
+            colTotals[c].sum += cell.sum;
+
+            let displayVal = 0;
+            if (aggFunc === 'count') displayVal = cell.count;
+            else if (aggFunc === 'sum') displayVal = cell.sum;
+            else if (aggFunc === 'avg') displayVal = cell.count > 0 ? (cell.sum / cell.count).toFixed(2) : 0;
+
+            displayVal = Number.isInteger(Number(displayVal)) ? displayVal : Number(displayVal).toLocaleString('id-ID');
+            tbody += `<td>${displayVal}</td>`;
+        });
+
+        let rTotDisp = 0;
+        if (aggFunc === 'count') rTotDisp = rowTotal.count;
+        else if (aggFunc === 'sum') rTotDisp = rowTotal.sum;
+        else if (aggFunc === 'avg') rTotDisp = rowTotal.count > 0 ? (rowTotal.sum / rowTotal.count).toFixed(2) : 0;
+        
+        rTotDisp = Number.isInteger(Number(rTotDisp)) ? rTotDisp : Number(rTotDisp).toLocaleString('id-ID');
+        tbody += `<td style="background: var(--bg-surface);"><b>${rTotDisp}</b></td></tr>`;
+        
+        grandTotal.count += rowTotal.count;
+        grandTotal.sum += rowTotal.sum;
+    });
+
+    tbody += '<tr><td style="background: var(--bg-surface);"><b>Total Kolom</b></td>';
+    sortedCols.forEach(c => {
+        let cTotDisp = 0;
+        if (aggFunc === 'count') cTotDisp = colTotals[c].count;
+        else if (aggFunc === 'sum') cTotDisp = colTotals[c].sum;
+        else if (aggFunc === 'avg') cTotDisp = colTotals[c].count > 0 ? (colTotals[c].sum / colTotals[c].count).toFixed(2) : 0;
+        
+        cTotDisp = Number.isInteger(Number(cTotDisp)) ? cTotDisp : Number(cTotDisp).toLocaleString('id-ID');
+        tbody += `<td style="background: var(--bg-surface);"><b>${cTotDisp}</b></td>`;
+    });
+
+    let gTotDisp = 0;
+    if (aggFunc === 'count') gTotDisp = grandTotal.count;
+    else if (aggFunc === 'sum') gTotDisp = grandTotal.sum;
+    else if (aggFunc === 'avg') gTotDisp = grandTotal.count > 0 ? (grandTotal.sum / grandTotal.count).toFixed(2) : 0;
+    
+    gTotDisp = Number.isInteger(Number(gTotDisp)) ? gTotDisp : Number(gTotDisp).toLocaleString('id-ID');
+    tbody += `<td style="background: var(--primary-faint); color: var(--primary);"><b>${gTotDisp}</b></td></tr>`;
+
+    document.getElementById('xtab-head-content').innerHTML = thead;
+    document.getElementById('xtab-body-content').innerHTML = tbody;
+
+    if (document.getElementById('xtab-view-mode').value === 'chart') {
+        renderXtabChart();
+    }
+});
+
+const customCanvasBackgroundColor = {
+    id: 'customCanvasBackgroundColor',
+    beforeDraw: (chart, args, options) => {
+        const {ctx} = chart;
+        ctx.save();
+        ctx.globalCompositeOperation = 'destination-over';
+        ctx.fillStyle = options.color || '#ffffff';
+        ctx.fillRect(0, 0, chart.width, chart.height);
+        ctx.restore();
+    }
+};
+
+function renderXtabChart() {
+    if (!lastXtabData) return;
+    const ctx = document.getElementById('xtabChart').getContext('2d');
+    if (xtabChartInstance) {
+        xtabChartInstance.destroy();
+    }
+
+    const { matrix, sortedRows, sortedCols, aggFunc, rowVar, colVar } = lastXtabData;
+    const chartType = document.getElementById('xtab-chart-type').value;
+
+    if (Object.keys(xtabChartColors).length === 0) {
+        let baseColors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+        let generatedColors = chroma.scale(baseColors).colors(Math.max(sortedCols.length, 2));
+        sortedCols.forEach((c, i) => {
+            xtabChartColors[c] = generatedColors[i % generatedColors.length];
+        });
+    }
+
+    let datasets = sortedCols.map((c) => {
+        let data = sortedRows.map(r => {
+            let cell = matrix[r][c];
+            if (!cell) return 0;
+            if (aggFunc === 'count') return cell.count;
+            if (aggFunc === 'sum') return cell.sum;
+            if (aggFunc === 'avg') return cell.count > 0 ? (cell.sum / cell.count) : 0;
+            return 0;
+        });
+        
+        return {
+            label: c,
+            data: data,
+            backgroundColor: xtabChartColors[c],
+            borderColor: chroma(xtabChartColors[c]).darken(1).hex(),
+            borderWidth: 1
+        };
+    });
+
+    let actualType = chartType === 'horizontalBar' ? 'bar' : (chartType === 'stacked' ? 'bar' : chartType);
+    let indexAxis = chartType === 'horizontalBar' ? 'y' : 'x';
+    
+    const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-main').trim() || '#1e293b';
+    const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#e2e8f0';
+    const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-sidebar').trim() || '#ffffff';
+    
+    Chart.defaults.color = textColor;
+
+    const rowNameDisplay = labelMap[rowVar] ? `${rowVar} - ${labelMap[rowVar]}` : rowVar;
+    const colNameDisplay = labelMap[colVar] ? `${colVar} - ${labelMap[colVar]}` : colVar;
+    const chartTitle = `Tabulasi Silang: ${rowNameDisplay} vs ${colNameDisplay}`;
+
+    let options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: indexAxis,
+        plugins: {
+            legend: { display: false },
+            title: {
+                display: true,
+                text: chartTitle,
+                color: textColor,
+                font: { size: 14, family: 'Nunito Sans', weight: 'bold' },
+                padding: { bottom: 20 }
+            },
+            customCanvasBackgroundColor: { color: bgColor }
+        },
+        scales: {
+            x: { grid: { color: gridColor }, ticks: { color: textColor } },
+            y: { grid: { color: gridColor }, ticks: { color: textColor } }
+        }
+    };
+
+    if (chartType === 'stacked') {
+        options.scales.x.stacked = true;
+        options.scales.y.stacked = true;
+    }
+
+    xtabChartInstance = new Chart(ctx, {
+        type: actualType,
+        data: { labels: sortedRows, datasets: datasets },
+        options: options,
+        plugins: [customCanvasBackgroundColor]
+    });
+
+    const legendContainer = document.getElementById('xtab-chart-legend');
+    legendContainer.innerHTML = '';
+    sortedCols.forEach((c, i) => {
+        const item = document.createElement('div');
+        item.style.display = 'flex';
+        item.style.alignItems = 'center';
+        item.style.gap = '8px';
+        item.style.background = 'var(--bg-surface)';
+        item.style.padding = '4px 10px';
+        item.style.borderRadius = '20px';
+        item.style.border = '1px solid var(--border)';
+        
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.className = 'cat-color-picker'; 
+        colorInput.value = chroma(xtabChartColors[c]).hex();
+        colorInput.style.width = '20px';
+        colorInput.style.height = '20px';
+        colorInput.style.padding = '0';
+        colorInput.style.cursor = 'pointer';
+        colorInput.style.borderRadius = '50%';
+        
+        colorInput.addEventListener('input', (e) => {
+            const newColor = e.target.value;
+            xtabChartColors[c] = newColor;
+            xtabChartInstance.data.datasets[i].backgroundColor = newColor;
+            xtabChartInstance.data.datasets[i].borderColor = chroma(newColor).darken(1).hex();
+            xtabChartInstance.update();
+        });
+
+        const label = document.createElement('span');
+        label.textContent = c;
+        label.style.fontSize = '11px';
+        label.style.color = 'var(--text-main)';
+        label.style.fontWeight = '700';
+
+        item.appendChild(colorInput);
+        item.appendChild(label);
+        legendContainer.appendChild(item);
+    });
+}
+
+document.getElementById('btn-export-xtab').addEventListener('click', () => {
+    const table = document.getElementById('xtab-table-element');
+    if (!table || document.getElementById('xtab-body-content').innerText.includes("Silakan pilih variabel")) {
+        alert("Buat tabel terlebih dahulu sebelum diunduh.");
+        return;
+    }
+    const wb = XLSX.utils.table_to_book(table, {sheet: "Tabulasi Silang"});
+    XLSX.writeFile(wb, "Tabulasi_Silang_PODES.xlsx");
+});
+
+document.getElementById('btn-export-xtab-chart').addEventListener('click', () => {
+    if (!xtabChartInstance) {
+        alert("Grafik belum diproses. Klik 'Proses Data' terlebih dahulu!");
+        return;
+    }
+    
+    const btn = document.getElementById('btn-export-xtab-chart');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<span style="font-size: 10px;">Proses...</span>';
+    btn.disabled = true;
+
+    const chartWrapper = document.getElementById('xtab-chart-wrapper');
+    const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-sidebar').trim() || '#ffffff';
+
+    domtoimage.toPng(chartWrapper, { bgcolor: bgColor })
+        .then(function (dataUrl) {
+            const link = document.createElement('a');
+            link.download = 'Grafik_Crosstab_PODES.png';
+            link.href = dataUrl;
+            link.click();
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        })
+        .catch(function (error) {
+            console.error('Oops, tidak bisa mengunduh gambar grafik!', error);
+            alert('Gagal mengunduh grafik.');
+            btn.innerHTML = originalHTML;
             btn.disabled = false;
         });
 });
@@ -1716,30 +2375,35 @@ document.getElementById('sel-basemap').addEventListener('change', (e) => {
     const val = e.target.value;
     map.removeLayer(currentBasemap);
     let url = '', attr = '&copy; <a href="https://carto.com/">CartoDB</a>';
+    let tileOptions = {}; 
     
     const root = document.documentElement;
     const isDark = root.getAttribute('data-theme') === 'dark';
     
     if (val === 'dark') {
         url = 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png';
-        document.getElementById('map').style.background = '#0f172a'; // warna khusus dark mode
+        document.getElementById('map').style.background = '#0f172a'; 
+        tileOptions = { attribution: attr, crossOrigin: true };
     } else if (val === 'light') {
         url = 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png';
         document.getElementById('map').style.background = isDark ? '#1e293b' : '#f8fafc';
+        tileOptions = { attribution: attr, crossOrigin: true };
     } else if (val === 'google-satellite') { 
-        url = 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'; 
+        url = 'https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'; 
         attr = '&copy; Google Maps'; 
         document.getElementById('map').style.background = '#0f172a';
+        tileOptions = { attribution: attr, subdomains: ['mt0','mt1','mt2','mt3'] }; 
     } else if (val === 'google-hybrid') { 
-        url = 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'; 
+        url = 'https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'; 
         attr = '&copy; Google Maps'; 
         document.getElementById('map').style.background = '#0f172a';
+        tileOptions = { attribution: attr, subdomains: ['mt0','mt1','mt2','mt3'] }; 
     }
     
-    currentBasemap = L.tileLayer(url, { attribution: attr, crossOrigin: true }).addTo(map);
+    currentBasemap = L.tileLayer(url, tileOptions).addTo(map);
 });
 
-// DETEKSI OTOMATIS TIPE DATA
+// ─── DETEKSI OTOMATIS TIPE DATA ───
 document.getElementById('sel-var1').addEventListener('change', (e) => {
     catColorMap = {}; 
     const varName = e.target.value;
@@ -1750,9 +2414,11 @@ document.getElementById('sel-var1').addEventListener('change', (e) => {
         for (let i = 0; i < currentFilteredFeatures.length; i++) {
             let val = currentFilteredFeatures[i].properties[varName];
             if (val !== null && val !== undefined && String(val).trim() !== '') {
+                let str = String(val).trim();
+                if (str === '-' || str.toLowerCase() === 'na' || str.toLowerCase() === 'n/a') continue; 
+                
                 hasData = true;
-                let testVal = String(val).trim().replace(/,/g, '.');
-                if (isNaN(Number(testVal))) {
+                if (getSafeNum(val) === null) {
                     isNumeric = false;
                     break;
                 }
@@ -1779,8 +2445,6 @@ document.querySelectorAll('.method-btn').forEach(b => { b.onclick = () => { docu
 document.getElementById('color-symbol-picker').addEventListener('input', () => applyViz(false));
 document.getElementById('slider-opacity').oninput = (e) => { currentOpacity = parseFloat(e.target.value); }; 
 document.getElementById('slider-classes').oninput = (e) => { const val = e.target.value; document.getElementById('val-classes').textContent = val; currentClasses = parseInt(val); applyViz(false); };
-
-document.getElementById('btn-exit').addEventListener('click', () => { resetInfoPanel(); document.getElementById('upload-screen').style.display = 'flex'; geojsonData = null; csvRows = null; allCols = []; catColorMap = {}; labelMap = {}; if (leafletLayer) { map.removeLayer(leafletLayer); leafletLayer = null; } document.getElementById('btn-launch').disabled = true; document.getElementById('status-csv').textContent = 'Format .csv / .xlsx. Pastikan ada kolom ID Desa.'; document.getElementById('status-csv').className = 'card-status'; document.getElementById('status-geo').textContent = 'Format .geojson. ID harus sinkron dgn Tabel.'; document.getElementById('status-geo').className = 'card-status'; document.getElementById('status-label').textContent = 'Kolom 1: Kode, 2: Nama. Boleh dikosongkan.'; document.getElementById('status-label').className = 'card-status'; document.getElementById('input-csv').value = ''; document.getElementById('text-csv').textContent = 'No file chosen'; document.getElementById('input-geo').value = ''; document.getElementById('text-geo').textContent = 'No file chosen'; document.getElementById('input-label').value = ''; document.getElementById('text-label').textContent = 'No file chosen'; document.getElementById('status-badge').textContent = '0 Wilayah'; document.getElementById('header-location').textContent = 'SULAWESI TENGGARA'; document.getElementById('legend-title').textContent = '-'; });
 </script>
 </body>
 </html>
