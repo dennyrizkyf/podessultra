@@ -111,6 +111,9 @@ body {
 
 #header h1 { color: var(--text-main); font-size: 16px; font-weight: 800; letter-spacing: 0.02em; display: flex; align-items: center; gap: 8px;}
 
+body:has(#sidebar.hidden) #header > svg,
+body:has(#sidebar.hidden) #header h1 { display: none; }
+
 .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 #header-location { font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em; }
 
@@ -170,6 +173,28 @@ body {
 .section-title[data-icon="metode"] { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21'/%3E%3Cline x1='9' y1='3' x2='9' y2='18'/%3E%3Cline x1='15' y1='6' x2='15' y2='21'/%3E%3C/svg%3E"); }
 .section-title[data-icon="warna"] { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z'/%3E%3C/svg%3E"); }
 .section-title[data-icon="lanjutan"] { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='4' y1='21' x2='4' y2='14'/%3E%3Cline x1='4' y1='10' x2='4' y2='3'/%3E%3Cline x1='12' y1='21' x2='12' y2='12'/%3E%3Cline x1='12' y1='8' x2='12' y2='3'/%3E%3Cline x1='20' y1='21' x2='20' y2='16'/%3E%3Cline x1='20' y1='12' x2='20' y2='3'/%3E%3Cline x1='1' y1='14' x2='7' y2='14'/%3E%3Cline x1='9' y1='8' x2='15' y2='8'/%3E%3Cline x1='17' y1='16' x2='23' y2='16'/%3E%3C/svg%3E"); }
+
+.section-title { cursor: pointer; user-select: none; }
+.section-title::after {
+  content: ''; margin-left: auto; width: 14px; height: 14px; flex-shrink: 0;
+  background-color: var(--text-muted);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform 0.2s;
+}
+.section.collapsed .section-title::after { transform: rotate(-90deg); }
+.section.collapsed > *:not(.section-title) { display: none !important; }
+.section.collapsed { padding-top: 16px; padding-bottom: 16px; }
+.section.collapsed .section-title { margin-bottom: 0; }
+.section-title:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; border-radius: 4px; }
+.section-title[data-icon="ekspor"] { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/%3E%3Cpolyline points='7 10 12 15 17 10'/%3E%3Cline x1='12' y1='15' x2='12' y2='3'/%3E%3C/svg%3E"); }
+
+.sidebar-actions {
+  position: sticky; bottom: 0; z-index: 5;
+  background: var(--bg-sidebar); border-top: 1px solid var(--border); border-bottom: none;
+  padding: 14px 24px; gap: 8px;
+}
+@media (min-width: 1025px) { #btn-apply { display: none; } }
 
 label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px; font-weight: 600; }
 
@@ -312,6 +337,7 @@ input[type=range] { padding: 0; background: transparent; height: 24px; box-shado
   position: absolute; bottom: 20px; left: 20px; z-index: 1000;
   padding: 20px 24px; width: 280px; max-height: 50vh; overflow-y: auto; 
 }
+#legend-box.is-empty { display: none; }
 #legend-bar { height: 10px; border-radius: 4px; margin-bottom: 10px; display: flex; overflow: hidden; }
 #legend-title { font-size:13px; font-weight:700; margin-bottom:14px; color:var(--text-main); line-height: 1.4;}
 .legend-labels { display: flex; justify-content: space-between; font-size: 11px; color:var(--text-muted); }
@@ -584,8 +610,8 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
 <div id="main">
   <!-- SIDEBAR KIRI -->
   <div id="sidebar">
-    <div class="section">
-      <div class="section-title" data-icon="wilayah">Pencarian & Filter</div>
+    <div class="section collapsed">
+      <div class="section-title" data-icon="wilayah">Wilayah</div>
       <div class="search-container">
         <input type="text" id="input-global-search" placeholder="Cari Nama / ID Wilayah..." autocomplete="off">
         <button id="btn-clear-search" title="Hapus Pencarian">
@@ -652,7 +678,7 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
     </div>
 
     <div class="section">
-      <div class="section-title" data-icon="metode">Metode Visualisasi</div>
+      <div class="section-title" data-icon="metode">Tampilan</div>
       <div class="method-grid">
         <button class="method-btn active" data-method="choropleth"><span class="method-icon">🎨</span>Warna Area</button>
         <button class="method-btn" data-method="proportional"><span class="method-icon">🔘</span>Simbol</button>
@@ -678,7 +704,7 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
     </div>
 
     <div class="section" id="palette-section">
-      <div class="section-title" data-icon="warna">Pengaturan Warna & Garis</div>
+      <div class="section-title" data-icon="warna">Warna & Garis</div>
       
       <div id="choropleth-color-box">
           <label>Pilih Palet Dasar:</label>
@@ -708,8 +734,8 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
       </div>
     </div>
 
-    <div class="section">
-      <div class="section-title" data-icon="lanjutan">Peta Dasar & Poligon</div>
+    <div class="section collapsed">
+      <div class="section-title" data-icon="lanjutan">Lanjutan</div>
       <label>Tema Background Peta</label>
       <select id="sel-basemap">
         <option value="light" selected>Terang (Light Mode)</option>
@@ -732,20 +758,22 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
       <input type="color" id="color-empty-picker" class="cat-color-picker" style="width: 100%; height: 32px; border-radius:6px;" value="#cbd5e1">
     </div>
 
-    <div class="section" style="border-bottom: none; display: flex; flex-direction: column; gap: 12px; padding-bottom: 10px;">
+    <div class="section collapsed">
+      <div class="section-title" data-icon="ekspor">Ekspor</div>
+      <div style="display:flex; flex-direction: column; gap: 8px; margin-bottom: 12px; background: var(--bg-surface); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+          <label style="margin-bottom:0; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--text-main); font-weight:700;"><input type="checkbox" id="chk-export-trans"> Background Transparan</label>
+          <label style="margin-bottom:0; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--text-main); font-weight:700;"><input type="checkbox" id="chk-export-clean"> Sembunyikan Legenda/Teks</label>
+      </div>
+      <div class="action-row" style="margin-top: 0;">
+          <button class="btn-action" id="btn-export-png">Unduh PNG</button>
+          <button class="btn-action" id="btn-export-svg">Unduh SVG</button>
+      </div>
+    </div>
+
+    <div class="section sidebar-actions" style="display: flex; flex-direction: column;">
         <button class="btn-apply" id="btn-apply">Tampilkan Peta</button>
         <button class="btn-action" id="btn-table" style="width: 100%;">Tabel Data</button>
-        
-        <div style="display:flex; flex-direction: column; gap: 8px; margin-bottom: 4px; margin-top: 12px; background: var(--bg-surface); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
-            <label style="margin-bottom:0; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--text-main); font-weight:700;"><input type="checkbox" id="chk-export-trans"> Background Transparan</label>
-            <label style="margin-bottom:0; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--text-main); font-weight:700;"><input type="checkbox" id="chk-export-clean"> Sembunyikan Legenda/Teks</label>
-        </div>
-        <div class="action-row" style="margin-top: 0;">
-            <button class="btn-action" id="btn-export-png">Unduh PNG</button>
-            <button class="btn-action" id="btn-export-svg">Unduh SVG</button>
-        </div>
-        
-        <button class="btn-reset" id="btn-reset">Reset Pengaturan</button>
+        <button class="btn-reset" id="btn-reset" style="margin-top: 0;">Reset Pengaturan</button>
     </div>
 
     <div class="sidebar-footer">
@@ -766,8 +794,11 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
       </div>
     </div>
     <div id="empty-hint" class="glass-panel" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1000; width:min(420px, calc(100% - 40px)); box-sizing:border-box; padding:24px;">
-      <div style="font-size:16px; font-weight:800; color:var(--text-main); margin-bottom:8px;">Pilih variabel untuk mulai</div>
-      <div style="font-size:13px; line-height:1.6; color:var(--text-muted); margin-bottom:14px;">Peta sudah dimuat. Pilih variabel di panel kiri, atau coba salah satu ini:</div>
+      <button id="btn-empty-hint-close" type="button" aria-label="Tutup" title="Tutup" style="position:absolute; top:12px; right:12px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border:1px solid var(--border); background:var(--bg-surface); border-radius:6px; color:var(--text-muted); cursor:pointer;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <div style="font-size:16px; font-weight:800; color:var(--text-main); margin-bottom:8px; padding-right:36px;">Pilih variabel untuk mulai</div>
+      <div id="empty-hint-desc" style="font-size:13px; line-height:1.6; color:var(--text-muted); margin-bottom:14px;">Peta sudah dimuat. Pilih variabel di panel kiri, atau coba salah satu ini:</div>
       <div id="empty-hint-list" style="display:flex; flex-direction:column; gap:8px;"></div>
     </div>
 
@@ -1805,50 +1836,148 @@ function updateMethodVisibility() {
     const typeContainer = document.getElementById('type-container');
     if (typeContainer) typeContainer.style.display = selectedMethod === 'bivariate' ? 'none' : 'block';
 }
-function renderEmptyHint(show, count) {
+
+let emptyHintDismissed = false;
+document.getElementById('btn-empty-hint-close').addEventListener('click', () => {
+    emptyHintDismissed = true;
     const box = document.getElementById('empty-hint');
+    if (box) box.style.display = 'none';
+});
+
+const RECENT_KEY = 'podes_recent_vars';
+
+function getRecentVars() {
+    try {
+        const a = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+        return Array.isArray(a) ? a : [];
+    } catch (e) { return []; }
+}
+
+function pushRecentVar(name) {
+    if (!name) return;
+    try {
+        const a = getRecentVars().filter(x => x !== name);
+        a.unshift(name);
+        localStorage.setItem(RECENT_KEY, JSON.stringify(a.slice(0, 6)));
+    } catch (e) {}
+}
+
+function isIdLikeColumn(col) {
+    const u = String(col).toUpperCase();
+    return /(^|_)(ID|KODE|KD|NO|NOMOR|NIK|NAMA|NM|LAT|LON|LNG)(_|$)/.test(u)
+        || /^ID/.test(u)
+        || /ID$/.test(u)
+        || /PROV|KAB|KEC|DESA|KELURAHAN/.test(u);
+}
+
+function describeColumn(c) {
+    let seen = 0, numeric = true, allDigits = true;
+    const vals = new Set(), lens = new Set();
+    for (let i = 0; i < csvRows.length && i < 300; i++) {
+        const v = csvRows[i][c];
+        const s = (v === null || v === undefined) ? '' : String(v).trim();
+        if (s === '' || s === '-' || s.toLowerCase() === 'na' || s.toLowerCase() === 'n/a') continue;
+        seen++;
+        vals.add(s);
+        if (getSafeNum(v) === null) numeric = false;
+        if (/^\d+$/.test(s)) lens.add(s.length); else allDigits = false;
+    }
+    const codeLike = allDigits && lens.size === 1 && [...lens][0] >= 5;
+    return { seen, numeric, distinct: vals.size, codeLike };
+}
+
+function isUsableVar(c, needNumeric) {
+    if (isIdLikeColumn(c)) return false;
+    const d = describeColumn(c);
+    if (d.seen === 0 || d.distinct < 2 || d.codeLike) return false;
+    return needNumeric ? d.numeric : true;
+}
+
+function renderEmptyHint(show, count, hasVar1) {
+    const box = document.getElementById('empty-hint');
+    const legendBox = document.getElementById('legend-box');
+    const empty = !!(show && csvRows);
+    if (legendBox) legendBox.classList.toggle('is-empty', empty);
     if (!box) return;
-    box.style.display = (show && csvRows) ? 'block' : 'none';
-    if (!show || !csvRows) return;
+    if (!empty) emptyHintDismissed = false;
+    box.style.display = (empty && !emptyHintDismissed) ? 'block' : 'none';
+    if (!empty || emptyHintDismissed) return;
 
     const list = document.getElementById('empty-hint-list');
-    list.style.display = (count === '2') ? 'none' : 'flex';
-    const key = allCols.join('|');
-    if (list.dataset.key === key) return;
-    list.dataset.key = key;
-    list.innerHTML = '';
+    const desc = document.getElementById('empty-hint-desc');
+    const recent = getRecentVars();
+    const key = allCols.join('|') + '#' + recent.join(',') + '#' + Object.keys(labelMap).length;
 
-    const idCol = (document.getElementById('sel-join-csv')?.value || '').toUpperCase();
-    const skip = [idCol, (colKab||'').toUpperCase(), (colKec||'').toUpperCase(), (colDesa||'').toUpperCase()];
-    const cands = [];
-    for (const c of allCols) {
-        if (skip.includes(c.toUpperCase())) continue;
-        let seen = 0, ok = true;
-        for (let i = 0; i < csvRows.length && i < 300; i++) {
-            const v = csvRows[i][c];
-            const s = (v === null || v === undefined) ? '' : String(v).trim();
-            if (s === '' || s === '-' || s.toLowerCase() === 'na' || s.toLowerCase() === 'n/a') continue;
-            seen++;
-            if (getSafeNum(v) === null) { ok = false; break; }
-        }
-        if (ok && seen > 0) cands.push(c);
-        if (cands.length >= 3) break;
-    }
-    cands.forEach(c => {
-        const text = labelMap[c] ? `${c} - ${labelMap[c]}` : c;
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.textContent = text;
-        b.style.cssText = 'text-align:left; padding:10px 14px; border:1px solid var(--border); background:var(--bg-sidebar); color:var(--text-main); border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit;';
-        b.onclick = () => {
-            const hid = document.getElementById('sel-var1');
-            hid.value = c;
-            hid.setAttribute('data-text', text);
-            document.getElementById('search-var1').value = text;
-            hid.dispatchEvent(new Event('change'));
+    if (list.dataset.key !== key) {
+        list.dataset.key = key;
+        list.innerHTML = '';
+
+        const idCol = (document.getElementById('sel-join-csv')?.value || '').toUpperCase();
+        const skip = [idCol, (colKab||'').toUpperCase(), (colKec||'').toUpperCase(), (colDesa||'').toUpperCase()];
+        const picks = [];
+        const add = (c, tag) => {
+            if (picks.length < 3 && !picks.some(p => p.c === c)) picks.push({ c, tag });
         };
-        list.appendChild(b);
-    });
+
+        // 1. Terakhir dipakai
+        recent.forEach(c => {
+            if (allCols.includes(c) && !skip.includes(c.toUpperCase())) add(c, 'Terakhir dipakai');
+        });
+        // 2. Kolom yang punya label
+        if (picks.length < 3 && Object.keys(labelMap).length) {
+            for (const c of allCols) {
+                if (picks.length >= 3) break;
+                if (labelMap[c] && !skip.includes(c.toUpperCase()) && isUsableVar(c, true)) add(c, '');
+            }
+        }
+        // 3. Kolom numerik yang lolos saringan pengenal
+        if (picks.length < 3) {
+            for (const c of allCols) {
+                if (picks.length >= 3) break;
+                if (!skip.includes(c.toUpperCase()) && isUsableVar(c, true)) add(c, '');
+            }
+        }
+
+        picks.forEach(p => {
+            const text = labelMap[p.c] ? `${p.c} - ${labelMap[p.c]}` : p.c;
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:12px; text-align:left; padding:10px 14px; border:1px solid var(--border); background:var(--bg-sidebar); color:var(--text-main); border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit;';
+            const t = document.createElement('span');
+            t.textContent = text;
+            b.appendChild(t);
+            if (p.tag) {
+                const g = document.createElement('span');
+                g.textContent = p.tag;
+                g.style.cssText = 'font-size:11px; font-weight:700; color:var(--primary); white-space:nowrap;';
+                b.appendChild(g);
+            }
+            b.onclick = () => {
+                const hid = document.getElementById('sel-var1');
+                hid.value = p.c;
+                hid.setAttribute('data-text', text);
+                document.getElementById('search-var1').value = text;
+                hid.dispatchEvent(new Event('change'));
+            };
+            list.appendChild(b);
+        });
+        list.dataset.n = String(picks.length);
+    }
+
+    const showList = (count !== '2') && Number(list.dataset.n || 0) > 0;
+    list.style.display = showList ? 'flex' : 'none';
+
+    if (desc) {
+        if (count === '2') {
+            desc.textContent = hasVar1
+                ? 'Variabel utama sudah dipilih. Pilih variabel tambahan di panel kiri.'
+                : 'Pilih variabel utama dan variabel tambahan di panel kiri.';
+        } else {
+            desc.textContent = showList
+                ? 'Peta sudah dimuat. Pilih variabel di panel kiri, atau coba salah satu ini:'
+                : 'Peta sudah dimuat. Pilih variabel di panel kiri untuk mulai.';
+        }
+    }
 }
 
 function updateTypeVisibility() {
@@ -2141,7 +2270,7 @@ function applyViz(renderToMap = true, fitView = false) {
   };
 
   const legTitle = document.getElementById('legend-title');
-  renderEmptyHint(!var1 || (count === '2' && !var2), count);
+  renderEmptyHint(!var1 || (count === '2' && !var2), count, !!var1);
 
   if (!var1 || (count === '2' && !var2)) {
     if (legendUni) legendUni.style.display = 'none'; 
@@ -2966,6 +3095,7 @@ document.getElementById('sel-tingkat').addEventListener('change', (e) => {
 document.getElementById('sel-var1').addEventListener('change', (e) => {
     catColorMap = {}; 
     const varName = e.target.value;
+    pushRecentVar(varName);
     if (varName && currentFilteredFeatures && currentFilteredFeatures.length > 0) {
         let isNumeric = true;
         let hasData = false;
@@ -3038,6 +3168,22 @@ document.querySelectorAll('.seg button').forEach(b => {
     });
 });
 syncSegs();
+
+document.querySelectorAll('#sidebar .section-title').forEach(t => {
+    const sec = t.closest('.section');
+    if (!sec) return;
+    t.setAttribute('role', 'button');
+    t.setAttribute('tabindex', '0');
+    t.setAttribute('aria-expanded', String(!sec.classList.contains('collapsed')));
+    const toggle = () => {
+        sec.classList.toggle('collapsed');
+        t.setAttribute('aria-expanded', String(!sec.classList.contains('collapsed')));
+    };
+    t.addEventListener('click', toggle);
+    t.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+    });
+});
 
 document.getElementById('slider-opacity').addEventListener('input', (e) => { currentOpacity = parseFloat(e.target.value); applyVizDebounced(); });
 document.getElementById('color-symbol-picker').addEventListener('input', () => applyVizDebounced()); 
