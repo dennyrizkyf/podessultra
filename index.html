@@ -159,7 +159,17 @@ body {
   font-size: 12px; font-weight: 800; letter-spacing: 0.05em;
   color: var(--text-main); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
 }
-.section-title::before { content: ''; display: block; width: 4px; height: 14px; background: var(--primary-faint); border: 1px solid var(--primary); border-radius: 2px; }
+.section-title::before {
+  content: ''; display: block; width: 16px; height: 16px; flex-shrink: 0;
+  background-color: var(--primary);
+  -webkit-mask: var(--ic) center / contain no-repeat;
+  mask: var(--ic) center / contain no-repeat;
+}
+.section-title[data-icon="wilayah"] { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3C/svg%3E"); }
+.section-title[data-icon="variabel"] { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='12 2 2 7 12 12 22 7 12 2'/%3E%3Cpolyline points='2 17 12 22 22 17'/%3E%3Cpolyline points='2 12 12 17 22 12'/%3E%3C/svg%3E"); }
+.section-title[data-icon="metode"] { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21'/%3E%3Cline x1='9' y1='3' x2='9' y2='18'/%3E%3Cline x1='15' y1='6' x2='15' y2='21'/%3E%3C/svg%3E"); }
+.section-title[data-icon="warna"] { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z'/%3E%3C/svg%3E"); }
+.section-title[data-icon="lanjutan"] { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='4' y1='21' x2='4' y2='14'/%3E%3Cline x1='4' y1='10' x2='4' y2='3'/%3E%3Cline x1='12' y1='21' x2='12' y2='12'/%3E%3Cline x1='12' y1='8' x2='12' y2='3'/%3E%3Cline x1='20' y1='21' x2='20' y2='16'/%3E%3Cline x1='20' y1='12' x2='20' y2='3'/%3E%3Cline x1='1' y1='14' x2='7' y2='14'/%3E%3Cline x1='9' y1='8' x2='15' y2='8'/%3E%3Cline x1='17' y1='16' x2='23' y2='16'/%3E%3C/svg%3E"); }
 
 label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px; font-weight: 600; }
 
@@ -218,17 +228,18 @@ input[type=range] { padding: 0; background: transparent; height: 24px; box-shado
   color: var(--text-main); margin-bottom: 12px;
 }
 
-.method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-.method-btn {
-  padding: 12px 8px; border: 1px solid var(--border); border-radius: 8px;
-  background: var(--bg-sidebar); cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted);
-  text-align: center; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
+.seg, .method-grid { display: flex; gap: 4px; padding: 3px; background: var(--bg-surface); border-radius: 10px; }
+.method-grid { margin-bottom: 20px; }
+.seg button, .method-btn {
+  flex: 1; padding: 8px 6px; border: none; border-radius: 8px; background: transparent;
+  color: var(--text-muted); font-family: inherit; font-size: 12px; font-weight: 700;
+  text-align: center; cursor: pointer; transition: all 0.15s;
+  display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 6px;
 }
-.method-btn:hover { border-color: var(--text-muted); background: var(--bg-surface); color: var(--text-main); }
-.method-btn.active { border-color: var(--primary); background: var(--primary-faint); color: var(--primary); }
-.method-icon { font-size: 18px; opacity: 0.9; }
-.method-btn.active .method-icon { opacity: 1; }
+.seg button:hover, .method-btn:hover { color: var(--text-main); }
+.seg button.active, .method-btn.active { background: var(--bg-sidebar); color: var(--primary); box-shadow: var(--shadow-sm); }
+.method-icon { display: none; }
+#sel-var-count, #sel-var-type { display: none; }
 
 .palette-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
 .pal-btn {
@@ -507,6 +518,22 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
                 <option value="kabupaten">Kabupaten / Kota</option>
             </select>
         </div>
+
+        <div id="join-report" style="display:none; width:100%; border-top:1px dashed var(--border); margin-top:12px; padding-top:12px;">
+            <label style="display:block; font-size:11px; color:var(--text-muted); font-weight:800; text-align:center; margin-bottom:8px; letter-spacing:0.05em; text-transform:uppercase;">Kecocokan ID</label>
+            <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;">
+                <span id="jr-pct" style="font-size:28px; font-weight:800; color:var(--success);">-</span>
+                <span id="jr-desc" style="font-size:12px; font-weight:600; color:var(--text-muted);"></span>
+            </div>
+            <div style="height:8px; margin:10px 0 12px; background:var(--bg-surface); border-radius:6px; overflow:hidden;">
+                <div id="jr-bar" style="height:100%; width:0; background:var(--success);"></div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px; font-size:12px; font-weight:600; color:var(--text-main);">
+                <div style="display:flex; justify-content:space-between;"><span>Ada di tabel, tidak ada di peta</span><span id="jr-csv-only" style="font-weight:800;">0</span></div>
+                <div style="display:flex; justify-content:space-between;"><span>Ada di peta, tidak ada di tabel</span><span id="jr-geo-only" style="font-weight:800;">0</span></div>
+            </div>
+            <button id="btn-join-report" type="button" style="margin-top:12px; width:100%; padding:9px 14px; border:1px solid var(--border); background:var(--bg-sidebar); color:var(--primary); border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;">Unduh laporan ID tidak cocok (.xlsx)</button>
+        </div>
     </div>
 
     <div style="display: flex; gap: 16px; margin-top: clamp(20px, 4vw, 40px); justify-content: center; width: 100%;">
@@ -550,7 +577,7 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
       <svg class="theme-icon-sun" style="display:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
     </button>
 
-    <button id="btn-exit" title="Kembali ke Halaman Awal">Tutup</button>
+    <button id="btn-exit" title="Kembali ke layar unggah">Ganti data</button>
   </div>
 </div>
 
@@ -558,7 +585,7 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
   <!-- SIDEBAR KIRI -->
   <div id="sidebar">
     <div class="section">
-      <div class="section-title">Pencarian & Filter</div>
+      <div class="section-title" data-icon="wilayah">Pencarian & Filter</div>
       <div class="search-container">
         <input type="text" id="input-global-search" placeholder="Cari Nama / ID Wilayah..." autocomplete="off">
         <button id="btn-clear-search" title="Hapus Pencarian">
@@ -574,12 +601,16 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
     </div>
 
     <div class="section">
-      <div class="section-title">Variabel</div>
+      <div class="section-title" data-icon="variabel">Variabel</div>
       <label>Mode Tampilan</label>
       <select id="sel-var-count">
         <option value="1" selected>1 Variabel Utama</option>
         <option value="2">2 Variabel (Kombinasi)</option>
       </select>
+      <div class="seg" data-for="sel-var-count" style="margin-bottom: 16px;">
+        <button type="button" data-val="1">1 Variabel</button>
+        <button type="button" data-val="2">2 Variabel</button>
+      </div>
 
       <div class="var-block" id="var1-block">
         <span class="var-num">1. Variabel Utama</span>
@@ -595,6 +626,10 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
             <option value="continuous">Kontinu (Gradasi Warna)</option>
             <option value="categorical">Kategorik (Grup Kategori)</option>
           </select>
+          <div class="seg" data-for="sel-var-type">
+            <button type="button" data-val="continuous">Kontinu</button>
+            <button type="button" data-val="categorical">Kategorik</button>
+          </div>
         </div>
       </div>
 
@@ -617,7 +652,7 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
     </div>
 
     <div class="section">
-      <div class="section-title">Metode Visualisasi</div>
+      <div class="section-title" data-icon="metode">Metode Visualisasi</div>
       <div class="method-grid">
         <button class="method-btn active" data-method="choropleth"><span class="method-icon">🎨</span>Warna Area</button>
         <button class="method-btn" data-method="proportional"><span class="method-icon">🔘</span>Simbol</button>
@@ -643,7 +678,7 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
     </div>
 
     <div class="section" id="palette-section">
-      <div class="section-title">Pengaturan Warna & Garis</div>
+      <div class="section-title" data-icon="warna">Pengaturan Warna & Garis</div>
       
       <div id="choropleth-color-box">
           <label>Pilih Palet Dasar:</label>
@@ -674,7 +709,7 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
     </div>
 
     <div class="section">
-      <div class="section-title">Peta Dasar & Poligon</div>
+      <div class="section-title" data-icon="lanjutan">Peta Dasar & Poligon</div>
       <label>Tema Background Peta</label>
       <select id="sel-basemap">
         <option value="light" selected>Terang (Light Mode)</option>
@@ -694,7 +729,7 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
       <input type="color" id="color-border-picker" class="cat-color-picker" style="width: 100%; height: 32px; border-radius:6px;" value="#cbd5e1">
       
       <label style="margin-top: 16px;">Warna Wilayah Kosong (Tanpa Data)</label>
-      <input type="color" id="color-empty-picker" class="cat-color-picker" style="width: 100%; height: 32px; border-radius:6px;" value="#000000">
+      <input type="color" id="color-empty-picker" class="cat-color-picker" style="width: 100%; height: 32px; border-radius:6px;" value="#cbd5e1">
     </div>
 
     <div class="section" style="border-bottom: none; display: flex; flex-direction: column; gap: 12px; padding-bottom: 10px;">
@@ -703,7 +738,7 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
         
         <div style="display:flex; flex-direction: column; gap: 8px; margin-bottom: 4px; margin-top: 12px; background: var(--bg-surface); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
             <label style="margin-bottom:0; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--text-main); font-weight:700;"><input type="checkbox" id="chk-export-trans"> Background Transparan</label>
-            <label style="margin-bottom:0; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--text-main); font-weight:700;"><input type="checkbox" id="chk-export-clean" checked> Sembunyikan Legenda/Teks</label>
+            <label style="margin-bottom:0; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--text-main); font-weight:700;"><input type="checkbox" id="chk-export-clean"> Sembunyikan Legenda/Teks</label>
         </div>
         <div class="action-row" style="margin-top: 0;">
             <button class="btn-action" id="btn-export-png">Unduh PNG</button>
@@ -730,13 +765,17 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
         <div style="font-size:12px; font-weight:600; color:var(--text-main); text-align:center; padding: 4px 8px;">👆 Klik area untuk info detail</div>
       </div>
     </div>
+    <div id="empty-hint" class="glass-panel" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1000; width:min(420px, calc(100% - 40px)); box-sizing:border-box; padding:24px;">
+      <div style="font-size:16px; font-weight:800; color:var(--text-main); margin-bottom:8px;">Pilih variabel untuk mulai</div>
+      <div style="font-size:13px; line-height:1.6; color:var(--text-muted); margin-bottom:14px;">Peta sudah dimuat. Pilih variabel di panel kiri, atau coba salah satu ini:</div>
+      <div id="empty-hint-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
 
     <!-- LEGENDA PINDAH KE DALAM SINI (Absolute Position) -->
     <div id="legend-box" class="glass-panel">
       <div id="legend-title">-</div>
       <div id="legend-uni">
-        <div id="legend-bar"></div>
-        <div class="legend-labels"><span id="leg-min">-</span><span id="leg-max">-</span></div>
+        <div id="legend-classes" style="display:flex; flex-direction:column; gap:7px; font-size:12px; font-weight:600; color:var(--text-main);"></div>
       </div>
       
       <div id="legend-cat-help">Kategori Warna:</div>
@@ -1250,11 +1289,74 @@ function updateJoinSettingsUI() {
 
         if (bestCsvMatch) selJoinCsv.value = bestCsvMatch;
         if (bestGeoMatch) selJoinGeo.value = bestGeoMatch;
+        updateJoinReport();
 
     } else {
         joinSettingsDiv.style.display = 'none';
     }
 }
+let lastJoinReport = null;
+
+function computeJoinReport() {
+    const csvCol = document.getElementById('sel-join-csv').value;
+    const geoCol = document.getElementById('sel-join-geo').value;
+    if (!csvRows || !geojsonData || !csvCol || !geoCol) return null;
+    const has = (v) => v !== undefined && v !== null && String(v).trim() !== '';
+    const geoIds = new Set();
+    geojsonData.features.forEach(f => { const v = f.properties[geoCol]; if (has(v)) geoIds.add(normalizeId(v)); });
+    const csvIds = new Set();
+    csvRows.forEach(r => { if (has(r[csvCol])) csvIds.add(normalizeId(r[csvCol])); });
+    const csvOnly = csvRows.filter(r => has(r[csvCol]) && !geoIds.has(normalizeId(r[csvCol])));
+    const geoOnly = geojsonData.features.filter(f => has(f.properties[geoCol]) && !csvIds.has(normalizeId(f.properties[geoCol])));
+    let matched = 0;
+    csvIds.forEach(id => { if (geoIds.has(id)) matched++; });
+    return { csvCol, geoCol, total: csvIds.size, matched, csvOnly, geoOnly };
+}
+
+function updateJoinReport() {
+    const box = document.getElementById('join-report');
+    if (!box) return;
+    const rep = computeJoinReport();
+    lastJoinReport = rep;
+    if (!rep || rep.total === 0) { box.style.display = 'none'; return; }
+    const pct = (rep.matched / rep.total) * 100;
+    const nf = (n) => n.toLocaleString('id-ID');
+    const color = pct >= 95 ? 'var(--success)' : (pct >= 80 ? '#d97706' : 'var(--danger)');
+    const pctEl = document.getElementById('jr-pct');
+    pctEl.textContent = pct.toLocaleString('id-ID', { maximumFractionDigits: 1 }) + '%';
+    pctEl.style.color = color;
+    const bar = document.getElementById('jr-bar');
+    bar.style.width = pct + '%';
+    bar.style.background = color;
+    document.getElementById('jr-desc').textContent = `${nf(rep.matched)} dari ${nf(rep.total)} ID di tabel cocok dengan peta`;
+    document.getElementById('jr-csv-only').textContent = nf(rep.csvOnly.length);
+    document.getElementById('jr-geo-only').textContent = nf(rep.geoOnly.length);
+    box.style.display = 'block';
+}
+
+document.getElementById('sel-join-csv').addEventListener('change', updateJoinReport);
+document.getElementById('sel-join-geo').addEventListener('change', updateJoinReport);
+
+document.getElementById('btn-join-report').addEventListener('click', () => {
+    const rep = lastJoinReport;
+    if (!rep) return;
+    const isNameKey = (k) => /KAB|KEC|DESA|NAMA|^NM/i.test(k);
+    const rowsCsv = rep.csvOnly.map(r => {
+        const o = {}; o[rep.csvCol] = r[rep.csvCol];
+        allCols.forEach(c => { if (c !== rep.csvCol && isNameKey(c)) o[c] = r[c]; });
+        return o;
+    });
+    const rowsGeo = rep.geoOnly.map(f => {
+        const o = {}; o[rep.geoCol] = f.properties[rep.geoCol];
+        Object.keys(f.properties).forEach(k => { if (k !== rep.geoCol && isNameKey(k) && !k.startsWith('_')) o[k] = f.properties[k]; });
+        return o;
+    });
+    const sheet = (rows, kosong) => XLSX.utils.json_to_sheet(rows.length ? rows : [{ Keterangan: kosong }]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, sheet(rowsCsv, 'Semua ID di tabel ada di peta'), 'Tabel tanpa peta');
+    XLSX.utils.book_append_sheet(wb, sheet(rowsGeo, 'Semua ID di peta ada di tabel'), 'Peta tanpa tabel');
+    XLSX.writeFile(wb, 'Laporan_ID_Tidak_Cocok.xlsx');
+});
 
 // ── FILE HANDLER ──
 document.getElementById('input-csv').onchange = (e) => {
@@ -1544,7 +1646,7 @@ document.getElementById('btn-reset-files').addEventListener('click', () => {
     
     currentBorderWeight = 1; document.getElementById('slider-border-weight').value = 1; document.getElementById('val-border-weight').textContent = '1';
     currentBorderColor = '#cbd5e1'; document.getElementById('color-border-picker').value = '#cbd5e1';
-    document.getElementById('color-empty-picker').value = '#000000';
+    document.getElementById('color-empty-picker').value = '#cbd5e1';
     
     selectedPalette = PALETTES[0]; 
     document.querySelectorAll('.pal-btn').forEach((x, i) => { if(i===0) x.classList.add('selected'); else x.classList.remove('selected'); }); 
@@ -1596,7 +1698,7 @@ document.getElementById('btn-reset').addEventListener('click', () => {
     document.getElementById('slider-opacity').value = 0.8; currentOpacity = 0.8;
     currentBorderWeight = 1; document.getElementById('slider-border-weight').value = 1; document.getElementById('val-border-weight').textContent = '1';
     currentBorderColor = '#cbd5e1'; document.getElementById('color-border-picker').value = '#cbd5e1';
-    document.getElementById('color-empty-picker').value = '#000000';
+    document.getElementById('color-empty-picker').value = '#cbd5e1';
 
     // Reset palet warna
     selectedPalette = PALETTES[0];
@@ -1702,6 +1804,51 @@ function updateMethodVisibility() {
     }
     const typeContainer = document.getElementById('type-container');
     if (typeContainer) typeContainer.style.display = selectedMethod === 'bivariate' ? 'none' : 'block';
+}
+function renderEmptyHint(show, count) {
+    const box = document.getElementById('empty-hint');
+    if (!box) return;
+    box.style.display = (show && csvRows) ? 'block' : 'none';
+    if (!show || !csvRows) return;
+
+    const list = document.getElementById('empty-hint-list');
+    list.style.display = (count === '2') ? 'none' : 'flex';
+    const key = allCols.join('|');
+    if (list.dataset.key === key) return;
+    list.dataset.key = key;
+    list.innerHTML = '';
+
+    const idCol = (document.getElementById('sel-join-csv')?.value || '').toUpperCase();
+    const skip = [idCol, (colKab||'').toUpperCase(), (colKec||'').toUpperCase(), (colDesa||'').toUpperCase()];
+    const cands = [];
+    for (const c of allCols) {
+        if (skip.includes(c.toUpperCase())) continue;
+        let seen = 0, ok = true;
+        for (let i = 0; i < csvRows.length && i < 300; i++) {
+            const v = csvRows[i][c];
+            const s = (v === null || v === undefined) ? '' : String(v).trim();
+            if (s === '' || s === '-' || s.toLowerCase() === 'na' || s.toLowerCase() === 'n/a') continue;
+            seen++;
+            if (getSafeNum(v) === null) { ok = false; break; }
+        }
+        if (ok && seen > 0) cands.push(c);
+        if (cands.length >= 3) break;
+    }
+    cands.forEach(c => {
+        const text = labelMap[c] ? `${c} - ${labelMap[c]}` : c;
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = text;
+        b.style.cssText = 'text-align:left; padding:10px 14px; border:1px solid var(--border); background:var(--bg-sidebar); color:var(--text-main); border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit;';
+        b.onclick = () => {
+            const hid = document.getElementById('sel-var1');
+            hid.value = c;
+            hid.setAttribute('data-text', text);
+            document.getElementById('search-var1').value = text;
+            hid.dispatchEvent(new Event('change'));
+        };
+        list.appendChild(b);
+    });
 }
 
 function updateTypeVisibility() {
@@ -1872,6 +2019,7 @@ function showInfoPanel(info, var1Name, var2Name, hasVar1, hasVar2) {
 }
 
 function applyViz(renderToMap = true, fitView = false) {
+  syncSegs();
   if (!geojsonData || !geojsonData.features) return; 
 
   const count = document.getElementById('sel-var-count')?.value || '1';
@@ -1884,7 +2032,7 @@ function applyViz(renderToMap = true, fitView = false) {
   const varType = document.getElementById('sel-var-type')?.value || 'continuous';
   const isBiv = selectedMethod === 'bivariate';
   const isColorSymbol = selectedMethod === 'color-symbol';
-  const emptyColor = document.getElementById('color-empty-picker').value || '#000000';
+  const emptyColor = document.getElementById('color-empty-picker').value || '#cbd5e1';
   
   const v1NameDisplay = var1 ? (labelMap[var1] ? `${var1} - ${labelMap[var1]}` : var1) : '';
   const v2NameDisplay = var2 ? (labelMap[var2] ? `${var2} - ${labelMap[var2]}` : var2) : '';
@@ -1993,6 +2141,7 @@ function applyViz(renderToMap = true, fitView = false) {
   };
 
   const legTitle = document.getElementById('legend-title');
+  renderEmptyHint(!var1 || (count === '2' && !var2), count);
 
   if (!var1 || (count === '2' && !var2)) {
     if (legendUni) legendUni.style.display = 'none'; 
@@ -2369,6 +2518,35 @@ function applyViz(renderToMap = true, fitView = false) {
         if (v === null) return emptyColor;
         try { return scale(v).hex(); } catch(e) { return emptyColor; }
     };
+
+        const legClasses = document.getElementById('legend-classes');
+    if (legClasses) {
+        legClasses.innerHTML = '';
+        const fmt = (n) => parseFloat(Number(n).toFixed(2)).toLocaleString('id-ID');
+        const addRow = (color, text, extraStyle) => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex; align-items:center; gap:10px;' + (extraStyle || '');
+            const sw = document.createElement('span');
+            sw.style.cssText = 'width:28px; height:14px; border-radius:3px; flex-shrink:0; border:1px solid var(--border); background:' + color;
+            const tx = document.createElement('span');
+            tx.textContent = text;
+            row.appendChild(sw);
+            row.appendChild(tx);
+            legClasses.appendChild(row);
+        };
+        if (breakLimits.length <= 2) {
+            let c0; try { c0 = scale(min).hex(); } catch(e) { c0 = '#cccccc'; }
+            addRow(c0, min === max ? fmt(min) : fmt(min) + ' - ' + fmt(max));
+        } else {
+            for (let i = 0; i < breakLimits.length - 1; i++) {
+                let c; try { c = scale((breakLimits[i] + breakLimits[i + 1]) / 2).hex(); } catch(e) { c = '#cccccc'; }
+                addRow(c, fmt(breakLimits[i]) + ' - ' + fmt(breakLimits[i + 1]));
+            }
+        }
+        if (filtered.some(f => getSafeNum(f.properties[var1]) === null)) {
+            addRow(emptyColor, 'Tanpa data', 'margin-top:4px; padding-top:8px; border-top:1px dashed var(--border); color:var(--text-muted);');
+        }
+    }
 
     const legBar = document.getElementById('legend-bar');
     if (legBar) {
@@ -2842,6 +3020,24 @@ document.querySelectorAll('.method-btn').forEach(b => {
         applyViz(true); 
     }; 
 });
+
+function syncSegs() {
+    document.querySelectorAll('.seg').forEach(seg => {
+        const sel = document.getElementById(seg.dataset.for);
+        if (!sel) return;
+        seg.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.val === sel.value));
+    });
+}
+document.querySelectorAll('.seg button').forEach(b => {
+    b.addEventListener('click', () => {
+        const sel = document.getElementById(b.parentElement.dataset.for);
+        if (!sel || sel.value === b.dataset.val) return;
+        sel.value = b.dataset.val;
+        sel.dispatchEvent(new Event('change'));
+        syncSegs();
+    });
+});
+syncSegs();
 
 document.getElementById('slider-opacity').addEventListener('input', (e) => { currentOpacity = parseFloat(e.target.value); applyVizDebounced(); });
 document.getElementById('color-symbol-picker').addEventListener('input', () => applyVizDebounced()); 
