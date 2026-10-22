@@ -136,7 +136,6 @@ Berikutnya, urut berdasarkan manfaat untuk kerja pengolahan data:
 
 ## Masalah yang diketahui
 
-- Nilai opsi basemap masih bernama `google-satellite` dan `google-hybrid` di kode, walau sumber tile-nya sudah Esri.
 - Variabel hasil kalkulator memakai `labelMap[nama] = nama`, sehingga label bisa tampil ganda (`NAMA - NAMA`).
 - Pada penggabungan `{ ...match, ...f.properties }`, properti GeoJSON menimpa kolom CSV yang bernama sama.
 - Untuk file CSV, angka dengan koma ribuan gaya Inggris (`1,234`) dapat terbaca sebagai desimal. Bersihkan di sumber data.
