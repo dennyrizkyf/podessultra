@@ -223,7 +223,7 @@ select:focus, input[type=text]:focus, input[type=number]:focus { border-color: v
 
 input[type=range] { padding: 0; background: transparent; height: 24px; box-shadow: none; border: none; cursor: pointer; margin-bottom: 16px;}
 
-/* CSS KUSTOM COMBOBOX PENCARIAN VARIABEL */
+/* ─── DROPDOWN PENCARIAN VARIABEL (SEARCHABLE SELECT) ─── */
 .searchable-select { position: relative; margin-bottom: 16px; width: 100%; }
 .searchable-select input[type=text] { margin-bottom: 0; padding-right: 30px; cursor: text; font-weight: 600;}
 .searchable-select::after {
@@ -265,6 +265,7 @@ input[type=range] { padding: 0; background: transparent; height: 24px; box-shado
 .seg button.active, .method-btn.active { background: var(--bg-sidebar); color: var(--primary); box-shadow: var(--shadow-sm); }
 .method-icon { display: none; }
 #sel-var-count, #sel-var-type { display: none; }
+#classes-container.is-manual { display: none !important; }
 
 .palette-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
 .pal-btn {
@@ -305,7 +306,7 @@ input[type=range] { padding: 0; background: transparent; height: 24px; box-shado
   text-align: center; border-top: 1px solid var(--border); background: var(--bg-main);
 }
 
-/* ─── MAP WRAPPER & PANELS ─── */
+/* ─── PEMBUNGKUS PETA & PANEL ─── */
 #map-container { flex: 1; position: relative; display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; }
 #map { flex: 1; background: var(--bg-main); width: 100%; height: 100%; z-index: 1; transition: background-color 0.3s; }
 
@@ -332,7 +333,7 @@ input[type=range] { padding: 0; background: transparent; height: 24px; box-shado
 }
 #info-panel-close:hover { background: var(--border); color: var(--text-main); }
 
-/* Perombakan CSS Legenda agar kebal dari error Leaflet Control */
+/* Panel Legenda Peta */
 #legend-box { 
   position: absolute; bottom: 20px; left: 20px; z-index: 1000;
   padding: 20px 24px; width: 280px; max-height: 50vh; overflow-y: auto; 
@@ -342,7 +343,7 @@ input[type=range] { padding: 0; background: transparent; height: 24px; box-shado
 #legend-title { font-size:13px; font-weight:700; margin-bottom:14px; color:var(--text-main); line-height: 1.4;}
 .legend-labels { display: flex; justify-content: space-between; font-size: 11px; color:var(--text-muted); }
 
-/* ─── UPLOAD SCREEN RESPONSIVE ─── */
+/* ─── LAYAR UNGGAH BERKAS (RESPONSIF) ─── */
 #upload-screen {
   position: fixed; inset: 0; background: var(--bg-main);
   display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
@@ -380,7 +381,7 @@ input[type=range] { padding: 0; background: transparent; height: 24px; box-shado
 .card-status { font-size: clamp(10.5px, 1.5vw, 11.5px); color: var(--text-muted); margin-top: 12px; line-height: 1.4;}
 .card-status.ok { color: var(--success); font-weight: 600; }
 
-/* CSS PRATINJAU DATA */
+/* Kotak Pratinjau Data */
 .preview-box {
     max-height: 120px; overflow: auto; margin-top: 12px; font-size: 10px; 
     border-top: 1px solid var(--border); padding-top: 8px; border-radius: 0 0 6px 6px;
@@ -411,7 +412,7 @@ input[type=range] { padding: 0; background: transparent; height: 24px; box-shado
 .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ─── KELAS GABUNGAN UNTUK MODAL TABEL, CROSSTAB & KALKULATOR ─── */
+/* ─── MODAL DIALOG (TABEL, TABULASI SILANG, KALKULATOR) ─── */
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0, 0.6); backdrop-filter: blur(4px);
   z-index: 3000; display: none; align-items: center; justify-content: center; padding: 24px;
@@ -424,7 +425,7 @@ input[type=range] { padding: 0; background: transparent; height: 24px; box-shado
 }
 .modal-body { flex: 1; overflow: auto; padding: 0; background: var(--bg-sidebar); position: relative; }
 
-/* Kontrol Khusus Crosstab */
+/* Kontrol Khusus Tabulasi Silang */
 #crosstab-controls {
   padding: 16px 24px; background: var(--bg-surface); border-bottom: 1px solid var(--border);
   display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
@@ -467,11 +468,14 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
 .biv-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); width: 90px; height: 90px; margin: 12px auto; border-radius: 6px; overflow: hidden; box-shadow: var(--shadow-sm);}
 .biv-cell { width: 100%; height: 100%; }
 .biv-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 8px; }
+#toast-box { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 99999; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
+.toast { background: var(--text-main); color: var(--bg-sidebar); padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.25); max-width: min(90vw, 420px); opacity: 0; transform: translateY(8px); transition: opacity .2s, transform .2s; }
+.toast.show { opacity: 1; transform: translateY(0); }
 </style>
 </head>
 <body>
 
-<!-- UPLOAD SCREEN -->
+<!-- LAYAR UNGGAH BERKAS -->
 <div id="upload-screen">
   <button id="btn-theme-toggle-upload" class="icon-btn" title="Ganti Tema" style="position: absolute; top: 24px; right: 24px; padding: 8px; background: var(--bg-sidebar); box-shadow: var(--shadow-sm);">
     <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
@@ -576,7 +580,7 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
   </div>
 </div>
 
-<!-- LOADING -->
+<!-- INDIKATOR MEMUAT (LOADING) -->
 <div id="loading" style="display:none">
   <div class="spinner"></div>
   <h2 id="loading-text" style="color:var(--primary); margin-top:20px; font-size:14px; font-weight:600;">Memproses Data...</h2>
@@ -608,7 +612,7 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
 </div>
 
 <div id="main">
-  <!-- SIDEBAR KIRI -->
+  <!-- SIDEBAR PENGATURAN VISUALISASI PETA -->
   <div id="sidebar">
     <div class="section collapsed">
       <div class="section-title" data-icon="wilayah">Wilayah</div>
@@ -692,7 +696,13 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
           <option value="k" selected>Jenks (Natural Breaks)</option>
           <option value="q">Kuantil (Sama Banyak)</option>
           <option value="e">Interval Sama</option>
+          <option value="m">Manual (ketik batas sendiri)</option>
         </select>
+        <div id="manual-breaks-box" style="display:none; margin-bottom:12px;">
+          <label for="input-manual-breaks">Batas kelas (pisahkan dengan titik koma atau spasi)</label>
+          <input type="text" id="input-manual-breaks" placeholder="mis. 50; 100; 500; 1000" autocomplete="off" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg-sidebar); color:var(--text-main); font-size:13px; font-family:inherit;">
+          <div id="manual-breaks-hint" style="font-size:11px; color:var(--text-muted); margin-top:6px; line-height:1.5;"></div>
+        </div>
       </div>
 
       <div id="classes-container">
@@ -802,7 +812,7 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
       <div id="empty-hint-list" style="display:flex; flex-direction:column; gap:8px;"></div>
     </div>
 
-    <!-- LEGENDA PINDAH KE DALAM SINI (Absolute Position) -->
+    <!-- PANEL LEGENDA PETA -->
     <div id="legend-box" class="glass-panel">
       <div id="legend-title">-</div>
       <div id="legend-uni">
@@ -1048,8 +1058,21 @@ th.sortable { cursor: pointer; transition: background 0.2s; } th.sortable:hover 
 </div>
 
 <script>
-// ─── GLOBAL MAP VARIABLES ───
+// ─── VARIABEL GLOBAL & UTILITAS PETA ───
 var map = null;
+function showToast(msg, ms = 3500) {
+    let box = document.getElementById('toast-box');
+    if (!box) { box = document.createElement('div'); box.id = 'toast-box'; document.body.appendChild(box); }
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    box.appendChild(t);
+    requestAnimationFrame(() => t.classList.add('show'));
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 250); }, ms);
+}
+const escapeHtml = (v) => String(v === null || v === undefined ? '' : v)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 function debounce(fn, ms = 120) {
     let t;
     return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
@@ -1085,7 +1108,7 @@ function toggleTheme() {
 document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme);
 document.getElementById('btn-theme-toggle-upload').addEventListener('click', toggleTheme);
 
-// KONFIGURASI PALET & GLOBAL VARIABEL
+// ─── KONFIGURASI PALET & STATE GLOBAL APLIKASI ───
 const PALETTES = [
   { id:'Blues',  stops:['#eff6ff','#bae6fd','#3b82f6','#1d4ed8','#1e3a8a'] },
   { id:'Greens', stops:['#ecfdf5','#a7f3d0','#34d399','#059669','#022c22'] },
@@ -1109,10 +1132,10 @@ var currentSortCol = 'ID WILAYAH';
 var currentSortAsc = true;
 var labelMap = {};
 
-// Konstanta untuk deteksi Kunci ID
+// Konstanta kandidat nama kolom untuk Kunci ID wilayah
 const POTENTIAL_IDS = ['IDDESA', 'ID_DESA', 'KODE', 'KODE_DESA', 'ID', 'KODE_BPS', 'IDKAB', 'IDKEC'];
 
-// ─── AMAN DARI CRASH LEAFLET ───
+// ─── INISIALISASI PETA & KONTROL LEAFLET ───
 function initMapAndUI() {
     if (map) return; 
     
@@ -1181,12 +1204,12 @@ function getSafeNum(val) {
     return null;
 }
 
-// ── FUNGSI PRATINJAU DATA ──
+// ─── FUNGSI PRATINJAU DATA TABEL ───
 function generatePreviewHTML(dataArray) {
     if(!dataArray || dataArray.length === 0) return 'Tidak ada data';
     let keys = Object.keys(dataArray[0]);
     let html = '<table><thead><tr>';
-    keys.forEach(k => html += `<th>${k}</th>`);
+    keys.forEach(k => html += `<th>${escapeHtml(k)}</th>`);
     html += '</tr></thead><tbody>';
     let rowsToShow = Math.min(5, dataArray.length);
     for(let i=0; i<rowsToShow; i++) {
@@ -1197,7 +1220,7 @@ function generatePreviewHTML(dataArray) {
             // Batasi panjang teks preview agar rapi
             let strVal = String(val);
             if(strVal.length > 20) strVal = strVal.substring(0,20) + '...';
-            html += `<td>${strVal}</td>`;
+            html += `<td>${escapeHtml(strVal)}</td>`;
         });
         html += '</tr>';
     }
@@ -1205,7 +1228,7 @@ function generatePreviewHTML(dataArray) {
     return html;
 }
 
-// ── FUNGSI KOMPONEN DROPDOWN SEARCHABLE (KUSTOM) ──
+// ─── KOMPONEN DROPDOWN DENGAN PENCARIAN (CUSTOM SELECT) ───
 function populateCustomSelect(inputId, hiddenId, listId, options, emptyText = '-- Kosongkan --') {
     const input = document.getElementById(inputId);
     const hidden = document.getElementById(hiddenId);
@@ -1326,6 +1349,7 @@ function updateJoinSettingsUI() {
         joinSettingsDiv.style.display = 'none';
     }
 }
+// ─── LAPORAN & PENGECEKAN KECOCOKAN ID WILAYAH ───
 let lastJoinReport = null;
 
 function computeJoinReport() {
@@ -1389,7 +1413,8 @@ document.getElementById('btn-join-report').addEventListener('click', () => {
     XLSX.writeFile(wb, 'Laporan_ID_Tidak_Cocok.xlsx');
 });
 
-// ── FILE HANDLER ──
+// ─── PENANGANAN UNGGAH BERKAS (TABEL, GEOJSON, LABEL) ───
+// 1. Pengunggah data tabel (CSV / Excel)
 document.getElementById('input-csv').onchange = (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -1479,6 +1504,7 @@ document.getElementById('input-csv').onchange = (e) => {
   }
 };
 
+// 2. Pengunggah data spasial GeoJSON
 document.getElementById('input-geo').onchange = (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -1516,6 +1542,7 @@ document.getElementById('input-geo').onchange = (e) => {
   reader.readAsText(file);
 };
 
+// 3. Pengunggah berkas kamus label variabel
 document.getElementById('input-label').onchange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -1661,7 +1688,7 @@ document.getElementById('btn-reset-files').addEventListener('click', () => {
     document.getElementById('sel-var-type').value = 'continuous'; 
     updateTypeVisibility();
     
-    // Reset Custom Dropdowns
+    // Reset dropdown kustom
     document.getElementById('sel-var1').value = ''; document.getElementById('search-var1').value = ''; document.getElementById('sel-var1').setAttribute('data-text', '');
     document.getElementById('sel-var2').value = ''; document.getElementById('search-var2').value = ''; document.getElementById('sel-var2').setAttribute('data-text', '');
     
@@ -1672,6 +1699,7 @@ document.getElementById('btn-reset-files').addEventListener('click', () => {
     
     document.getElementById('slider-classes').value = 5; document.getElementById('val-classes').textContent = 5; currentClasses = 5; 
     document.getElementById('sel-continuous-method').value = 'k';
+    document.getElementById('input-manual-breaks').value = '';
     
     document.getElementById('slider-opacity').value = 0.8; currentOpacity = 0.8; 
     
@@ -1724,6 +1752,7 @@ document.getElementById('btn-reset').addEventListener('click', () => {
     // Reset klasifikasi
     document.getElementById('slider-classes').value = 5; document.getElementById('val-classes').textContent = 5; currentClasses = 5;
     document.getElementById('sel-continuous-method').value = 'k';
+    document.getElementById('input-manual-breaks').value = '';
 
     // Reset opacity & border
     document.getElementById('slider-opacity').value = 0.8; currentOpacity = 0.8;
@@ -1767,7 +1796,7 @@ document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
     if(map) setTimeout(() => { map.invalidateSize(); }, 300);
 });
 
-// ── FUNGSI SEGARKAN SELURUH DROPDOWN VARIABEL ──
+// ─── PENYEGARAN DROPDOWN PILIHAN VARIABEL ───
 function refreshVariableDropdowns() {
     let varOptions = [];
     const csvIdCol = document.getElementById('sel-join-csv').value;
@@ -1990,8 +2019,44 @@ function updateTypeVisibility() {
     if (classContainer) classContainer.style.display = isCategorical ? 'none' : 'block';
 }
 
+// ─── LOGIKA BATAS KELAS MANUAL & PEMETAAN DATA CSV ───
+function parseManualBreaks(text, min, max) {
+    const inner = String(text || '').split(/[;\s]+/)
+        .map(s => parseFloat(s.replace(',', '.')))
+        .filter(n => !isNaN(n) && n > min && n < max);
+    const uniq = [...new Set(inner)].sort((a, b) => a - b);
+    return uniq.length ? [min, ...uniq, max] : null;
+}
+
+function updateManualHint(limits, min, max) {
+    const el = document.getElementById('manual-breaks-hint');
+    if (!el) return;
+    const f = (n) => parseFloat(Number(n).toFixed(2)).toLocaleString('id-ID');
+    el.textContent = limits
+        ? `${limits.length - 1} kelas. Rentang data: ${f(min)} - ${f(max)}.`
+        : `Rentang data: ${f(min)} - ${f(max)}. Isi batas di dalam rentang ini. Sementara memakai kuantil.`;
+}
+
+function syncManualBreaksUI() {
+    const isManual = document.getElementById('sel-continuous-method')?.value === 'm';
+    const box = document.getElementById('manual-breaks-box');
+    const cc = document.getElementById('classes-container');
+    if (box) box.style.display = isManual ? 'block' : 'none';
+    if (cc) cc.classList.toggle('is-manual', isManual);
+}
+
 const normalizeId = (id) => String(id).trim().replace(/^0+/, '');
 
+function buildCsvMap(csvIdCol) {
+    const m = new Map();
+    csvRows.forEach(d => {
+        const k = normalizeId(d[csvIdCol]);
+        if (!m.has(k)) m.set(k, d);
+    });
+    return m;
+}
+
+// ─── INISIALISASI APLIKASI & PENGGABUNGAN DATA (JOIN) ───
 function initApp() {
   const tingkat = document.getElementById('sel-tingkat').value;
   document.getElementById('lbl-kec').style.display = (tingkat === 'kabupaten') ? 'none' : 'block';
@@ -2016,17 +2081,19 @@ function initApp() {
 
   updateKecDropdown('ALL');
 
+  const csvMap = buildCsvMap(csvIdCol);
   geojsonData.features.forEach(f => {
-    let geoIdVal = f.properties[geoIdCol];
-    
-    if (geoIdVal) {
-        const normGeoId = normalizeId(geoIdVal);
-        const match = csvRows.find(d => normalizeId(d[csvIdCol]) === normGeoId);
-        if (match) {
-            f.properties = { ...match, ...f.properties, _matched: true, _geoIdUsed: geoIdVal }; 
-        } else {
-            f.properties._matched = false;
+    const geoIdVal = f.properties[geoIdCol];
+    const match = geoIdVal ? csvMap.get(normalizeId(geoIdVal)) : undefined;
+    if (match) {
+        const merged = { ...f.properties };
+        for (const k in match) {
+            const v = match[k];
+            if (v !== undefined && v !== null && v !== '') merged[k] = v;
         }
+        merged._matched = true;
+        merged._geoIdUsed = geoIdVal;
+        f.properties = merged;
     } else {
         f.properties._matched = false;
     }
@@ -2127,17 +2194,17 @@ function showInfoPanel(info, var1Name, var2Name, hasVar1, hasVar2) {
     panel.classList.add('has-data'); 
 
     let html = `<div style="line-height:1.4;">`;
-    html += `<span style="font-size:10px; color:var(--text-muted); font-weight:700;">ID: ${info.id}</span><br>`;
-    html += `<b style="font-size:15px; color:var(--text-main); letter-spacing:0.02em;">${info.mainTitle}</b><br>`;
-    html += `<span style="font-size:11px; color:var(--text-muted); font-weight:600;">${info.subTitle}</span>`;
+    html += `<span style="font-size:10px; color:var(--text-muted); font-weight:700;">ID: ${escapeHtml(info.id)}</span><br>`;
+    html += `<b style="font-size:15px; color:var(--text-main); letter-spacing:0.02em;">${escapeHtml(info.mainTitle)}</b><br>`;
+    html += `<span style="font-size:11px; color:var(--text-muted); font-weight:600;">${escapeHtml(info.subTitle)}</span>`;
     html += `</div>`;
     html += `<div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border); font-size:13px;">`;
     if (!hasVar1) {
          html += `<div style="font-style:italic; color:var(--text-muted); font-size:12px;">Belum ada variabel diaktifkan</div>`;
     } else {
-         html += `<div style="margin-bottom:12px;"><span style="font-size:10px; text-transform:uppercase; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">${var1Name}</span><b style="font-size:14px; color:var(--primary);">${info.v1}</b></div>`;
+            html += `<div style="margin-bottom:12px;"><span style="font-size:10px; text-transform:uppercase; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">${escapeHtml(var1Name)}</span><b style="font-size:14px; color:var(--primary);">${escapeHtml(info.v1)}</b></div>`;
          if (hasVar2) {
-             html += `<div><span style="font-size:10px; text-transform:uppercase; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">${var2Name}</span><b style="font-size:14px; color:var(--primary);">${info.v2}</b></div>`;
+                html += `<div><span style="font-size:10px; text-transform:uppercase; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">${escapeHtml(var2Name)}</span><b style="font-size:14px; color:var(--primary);">${escapeHtml(info.v2)}</b></div>`;
          }
     }
     html += `</div>`;
@@ -2147,8 +2214,10 @@ function showInfoPanel(info, var1Name, var2Name, hasVar1, hasVar2) {
     if(closeBtn) closeBtn.style.display = 'flex';
 }
 
+// ─── RENDER VISUALISASI PETA & FILTER WILAYAH ───
 function applyViz(renderToMap = true, fitView = false) {
   syncSegs();
+  syncManualBreaksUI();
   if (!geojsonData || !geojsonData.features) return; 
 
   const count = document.getElementById('sel-var-count')?.value || '1';
@@ -2252,18 +2321,18 @@ function applyViz(renderToMap = true, fitView = false) {
   };
 
   const bindFeatureTooltip = (layer, info, var1Name, var1Val, var2Name, var2Val, type) => {
-      let html = `<div style="line-height:1.3;"><b style="font-size:12px; color:var(--text-main);">${info.mainTitle}</b><br><span style="font-size:10px; color:var(--text-muted);">${info.subTitle}</span></div>`;
+    let html = `<div style="line-height:1.3;"><b style="font-size:12px; color:var(--text-main);">${escapeHtml(info.mainTitle)}</b><br><span style="font-size:10px; color:var(--text-muted);">${escapeHtml(info.subTitle)}</span></div>`;
       
       if (type === 'empty') {
           html += `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:11px; font-style:italic; color:var(--text-muted);">Belum ada data visualisasi</div>`;
       } else if (type === 'colorsymbol') {
-          html += `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:11px; color:var(--text-main);">${var1Name}: <b>${var1Val}</b><br>${var2Name}: <b>${var2Val}</b></div>`;
+          html += `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:11px; color:var(--text-main);">${escapeHtml(var1Name)}: <b>${escapeHtml(var1Val)}</b><br>${escapeHtml(var2Name)}: <b>${escapeHtml(var2Val)}</b></div>`;
       } else if (type === 'proportional') {
-          html += `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:11px; color:var(--text-main);">${var1Name}: <b>${var1Val}</b></div>`;
+          html += `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:11px; color:var(--text-main);">${escapeHtml(var1Name)}: <b>${escapeHtml(var1Val)}</b></div>`;
       } else if (type === 'bivariate') {
-          html += `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:11px; color:var(--text-main);">${var1Name}: <b>${var1Val}</b><br>${var2Name}: <b>${var2Val}</b></div>`;
+          html += `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:11px; color:var(--text-main);">${escapeHtml(var1Name)}: <b>${escapeHtml(var1Val)}</b><br>${escapeHtml(var2Name)}: <b>${escapeHtml(var2Val)}</b></div>`;
       } else { // choropleth
-          html += `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:11px; color:var(--text-main);">${var1Name}: <b>${var1Val}</b></div>`;
+          html += `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:11px; color:var(--text-main);">${escapeHtml(var1Name)}: <b>${escapeHtml(var1Val)}</b></div>`;
       }
       
       layer.bindTooltip(html, { className: 'podes-tooltip', sticky: true });
@@ -2403,14 +2472,19 @@ function applyViz(renderToMap = true, fitView = false) {
     if (hasEmpty) uniqueVals.push('Kosong');
     
     const vibrantColors = ['#059669', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#0ea5e9', '#d946ef', '#84cc16', '#14b8a6', '#f97316'];
-    
+    const catColor = (i) => {
+        if (i < vibrantColors.length) return vibrantColors[i];
+        const k = i - vibrantColors.length;
+        return chroma.hsl((k * 137.508) % 360, 0.65, [0.42, 0.55, 0.68][k % 3]).hex();
+    };
+
     let textCatIdx = 0;
     uniqueVals.forEach((v) => { 
         if (!catColorMap[v]) {
             if (v === 'Kosong') {
                 catColorMap[v] = emptyColor; 
             } else {
-                catColorMap[v] = vibrantColors[textCatIdx % vibrantColors.length];
+                catColorMap[v] = catColor(textCatIdx);
                 textCatIdx++;
             }
         } 
@@ -2528,7 +2602,7 @@ function applyViz(renderToMap = true, fitView = false) {
     }
 
   } else {
-    // CONTINUOUS (KONTINU) LOGIC
+    // ─── VISUALISASI DATA KONTINU (CHOROPLETH & SIMBOL) ───
     if (legendCat) legendCat.style.display = 'none'; 
     if (legendCatHelp) legendCatHelp.style.display = 'none'; 
     if (legendBiv) legendBiv.style.display = 'none'; 
@@ -2569,7 +2643,7 @@ function applyViz(renderToMap = true, fitView = false) {
     const vals = filtered.map(f => getSafeNum(f.properties[var1])).filter(v => v !== null);
     if(vals.length === 0) return;
     
-    // Perbaikan anti-crash: hindari call stack size exceeded dengan loop biasa
+    // Hitung nilai rentang (min & max) secara iteratif untuk efisiensi dan keamanan stack
     let min = vals[0], max = vals[0];
     for (let i = 1; i < vals.length; i++) {
         if (vals[i] < min) min = vals[i];
@@ -2577,6 +2651,12 @@ function applyViz(renderToMap = true, fitView = false) {
     }
     
     let catMethod = document.getElementById('sel-continuous-method').value || 'k';
+    let manualLimits = null;
+    if (catMethod === 'm') {
+        manualLimits = parseManualBreaks(document.getElementById('input-manual-breaks')?.value, min, max);
+        updateManualHint(manualLimits, min, max);
+        catMethod = 'q';
+    }
     let limits = [];
 
     try {
@@ -2617,6 +2697,8 @@ function applyViz(renderToMap = true, fitView = false) {
     } catch(e) {
         limits = currentClasses;
     }
+
+    if (manualLimits && min !== max) limits = manualLimits;
     
     let scale;
     let breakLimits = [];
@@ -2825,7 +2907,7 @@ function applyViz(renderToMap = true, fitView = false) {
   if (headLoc) headLoc.textContent = locText;
 }
 
-// ── FUNGSI EKSPOR PNG & SVG ──
+// ─── EKSPOR PETA KE FORMAT GAMBAR (PNG & SVG) ───
 function executeMapExportPNG(btnId, fileName) {
     const btn = document.getElementById(btnId);
     if (!btn) return;
@@ -2975,7 +3057,7 @@ document.getElementById('btn-export-svg').addEventListener('click', () => {
     executeMapExportSVG('btn-export-svg', 'Peta_PODES_Sultra.svg');
 });
 
-// ─── EVENT LISTENERS KUSTOM & UI ───
+// ─── EVENT LISTENER KONTROL PETA & SIDEBAR ───
 const handleCustomGrad = () => { 
     const cStart = document.getElementById('color-grad-start').value;
     const cEnd = document.getElementById('color-grad-end').value; 
@@ -3130,6 +3212,7 @@ document.getElementById('sel-var-type').addEventListener('change', () => {
 });
 
 document.getElementById('sel-continuous-method').addEventListener('change', () => applyViz(true));
+document.getElementById('input-manual-breaks').addEventListener('input', () => applyVizDebounced());
 document.getElementById('sel-var2').addEventListener('change', () => applyViz(true));
 document.getElementById('sel-kab').addEventListener('change', (e) => { updateKecDropdown(e.target.value); applyViz(true, true); });
 document.getElementById('sel-kec').addEventListener('change', (e) => { 
@@ -3195,7 +3278,7 @@ document.getElementById('slider-classes').addEventListener('input', (e) => {
     applyVizDebounced(); 
 });
 
-// ─── TABEL DATA LOGIC ───
+// ─── LOGIKA & TAMPILAN TABEL DATA ───
 function renderTable() {
     const thead = document.getElementById('table-head-content');
     const tbody = document.getElementById('table-body-content');
@@ -3254,7 +3337,7 @@ function renderTable() {
     let thHtml = '<tr>';
     cols.forEach(col => {
         let icon = currentSortCol === col ? (currentSortAsc ? '▲' : '▼') : '<span style="opacity:0.2">↕</span>';
-        thHtml += `<th class="sortable" data-col="${col}">${col} <span class="sort-icon">${icon}</span></th>`;
+        thHtml += `<th class="sortable" data-col="${escapeHtml(col)}">${escapeHtml(col)} <span class="sort-icon">${icon}</span></th>`;
     });
     thHtml += '</tr>';
     thead.innerHTML = thHtml;
@@ -3271,7 +3354,7 @@ function renderTable() {
     let trHtml = '';
     tableData.forEach(row => {
         trHtml += `<tr>`;
-        cols.forEach(col => { trHtml += `<td>${row[col]}</td>`; });
+        cols.forEach(col => { trHtml += `<td>${escapeHtml(row[col])}</td>`; });
         trHtml += `</tr>`;
     });
     tbody.innerHTML = trHtml;
@@ -3289,7 +3372,7 @@ document.getElementById('btn-close-table').addEventListener('click', () => {
     document.getElementById('table-modal').style.display = 'none';
 });
 
-// ─── CROSSTAB & CHART LOGIC ───
+// ─── TABULASI SILANG & VISUALISASI GRAFIK ───
 let lastXtabData = null;
 let xtabChartInstance = null;
 let xtabChartColors = {};
@@ -3386,8 +3469,8 @@ document.getElementById('btn-generate-xtab').addEventListener('click', () => {
 
     const rowNameDisplay = labelMap[rowVar] ? `${rowVar} - ${labelMap[rowVar]}` : rowVar;
     const colNameDisplay = labelMap[colVar] ? `${colVar} - ${labelMap[colVar]}` : colVar;
-    let thead = `<tr><th>${rowNameDisplay} \\ ${colNameDisplay}</th>`;
-    sortedCols.forEach(c => { thead += `<th>${c}</th>`; });
+    let thead = `<tr><th>${escapeHtml(rowNameDisplay)} \\ ${escapeHtml(colNameDisplay)}</th>`;
+    sortedCols.forEach(c => { thead += `<th>${escapeHtml(c)}</th>`; });
     thead += '<th>Total Baris</th></tr>';
 
     let tbody = '';
@@ -3396,7 +3479,7 @@ document.getElementById('btn-generate-xtab').addEventListener('click', () => {
     let grandTotal = {count: 0, sum: 0};
 
     sortedRows.forEach(r => {
-        tbody += `<tr><td><b>${r}</b></td>`;
+        tbody += `<tr><td><b>${escapeHtml(r)}</b></td>`;
         let rowTotal = {count: 0, sum: 0};
 
         sortedCols.forEach(c => {
@@ -3636,6 +3719,7 @@ document.getElementById('btn-export-xtab-chart').addEventListener('click', () =>
 });
 
 // ─── LOGIKA KALKULATOR VARIABEL ───
+// Beralih tampilan form kalkulator sesuai metode perhitungan
 document.getElementById('calc-method').addEventListener('change', (e) => {
     document.getElementById('calc-mode-1').style.display = 'none';
     document.getElementById('calc-mode-2').style.display = 'none';
@@ -3645,6 +3729,7 @@ document.getElementById('calc-method').addEventListener('change', (e) => {
     else if (e.target.value === 'logic') document.getElementById('calc-mode-3').style.display = 'flex';
 });
 
+// Buka dialog modal kalkulator dan siapkan pilihan dropdown variabel
 document.getElementById('btn-open-calc').addEventListener('click', () => {
     if(!csvRows || csvRows.length === 0) return alert("Silakan muat data terlebih dahulu!");
     
@@ -3663,10 +3748,12 @@ document.getElementById('btn-open-calc').addEventListener('click', () => {
     document.getElementById('calc-modal').style.display = 'flex';
 });
 
+// Tutup dialog modal kalkulator
 document.getElementById('btn-close-calc').addEventListener('click', () => {
     document.getElementById('calc-modal').style.display = 'none';
 });
 
+// Buat variabel baru berdasarkan metode perhitungan terpilih
 document.getElementById('btn-save-calc').addEventListener('click', () => {
     const newNameRaw = document.getElementById('calc-new-name').value.trim();
     if (!newNameRaw) return alert("Nama variabel baru tidak boleh kosong!");
@@ -3676,6 +3763,7 @@ document.getElementById('btn-save-calc').addEventListener('click', () => {
 
     const method = document.getElementById('calc-method').value;
 
+    // 1. Hitung nilai untuk setiap baris data CSV
     csvRows.forEach(row => {
         let result = null;
         if (method === 'var_var') {
@@ -3728,22 +3816,23 @@ document.getElementById('btn-save-calc').addEventListener('click', () => {
         row[newName] = result !== null ? String(result) : '';
     });
 
+    // 2. Sinkronkan nilai variabel baru ke fitur GeoJSON yang cocok
     if (geojsonData && geojsonData.features) {
          const csvIdCol = document.getElementById('sel-join-csv').value;
+         const csvMap = buildCsvMap(csvIdCol);
          geojsonData.features.forEach(f => {
             if (f.properties._matched) {
-                const normGeoId = normalizeId(f.properties._geoIdUsed);
-                const match = csvRows.find(d => normalizeId(d[csvIdCol]) === normGeoId);
+                const match = csvMap.get(normalizeId(f.properties._geoIdUsed));
                 if (match) f.properties[newName] = match[newName];
             }
          });
     }
 
+    // 3. Daftarkan variabel baru, perbarui dropdown pilihan, dan beri notifikasi toast
     allCols.push(newName);
-    labelMap[newName] = newName; 
     refreshVariableDropdowns();
     document.getElementById('calc-modal').style.display = 'none';
-    alert(`Variabel "${newName}" berhasil dibuat! Silakan cari di menu pilihan variabel.`);
+    showToast(`Variabel "${newName}" berhasil dibuat. Cari di menu pilihan variabel.`);
 });
 
 </script>
